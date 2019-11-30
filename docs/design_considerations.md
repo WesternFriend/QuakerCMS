@@ -26,7 +26,7 @@ No dependency on proprietery services or software
 Mobile friendly (responsive UI)
 Meeting directories
 
-##Initial tasks
+## Initial tasks
 set up code repository
 create project scaffold
 research Quaker websites
