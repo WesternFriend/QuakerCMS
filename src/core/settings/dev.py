@@ -8,7 +8,7 @@ DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
-    "django-insecure-_odb62l=_u11+bj4a#@7g(hwhsik3e3_c5lti^g%1(h3)!!r1_",
+    "django-insecure-development-key-change-in-production",
 )
 
 # SECURITY WARNING: define the correct hosts in production!
