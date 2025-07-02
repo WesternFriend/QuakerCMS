@@ -34,7 +34,7 @@ django-stubs-ext==5.2.1
     # via django-tasks
 django-taggit==6.1.0
     # via wagtail
-django-tasks==0.7.0
+django-tasks==0.8.0
     # via wagtail
 django-treebeard==4.7.1
     # via wagtail
