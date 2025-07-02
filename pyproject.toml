@@ -30,3 +30,6 @@ dev = [
 # Django settings files commonly use star imports
 [tool.ruff.lint.per-file-ignores]
 "*/settings/*.py" = ["F403", "F405"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
