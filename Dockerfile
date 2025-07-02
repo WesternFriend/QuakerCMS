@@ -36,10 +36,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/app/.venv/bin:$PATH"
 
-# Install only runtime dependencies (if any)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
 # Set work directory and change ownership
 WORKDIR /app
 RUN chown wagtail:wagtail /app
