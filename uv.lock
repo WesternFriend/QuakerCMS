@@ -556,6 +556,7 @@ name = "quakercms"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "django" },
     { name = "wagtail" },
 ]
 
@@ -569,7 +570,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "wagtail", specifier = ">=7.0.1" }]
+requires-dist = [
+    { name = "django", specifier = ">=5.2.4" },
+    { name = "wagtail", specifier = ">=7.0.1" },
+]
 
 [package.metadata.requires-dev]
 dev = [
