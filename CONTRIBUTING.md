@@ -162,6 +162,8 @@ uv add --dev package-name
 python manage.py test
 ```
 
+Note: All tests also run automatically in our GitHub Actions CI pipeline when you create a pull request.
+
 ### Updating Dependencies
 
 To update all dependencies to their latest compatible versions:
@@ -174,6 +176,9 @@ uv sync --upgrade
 
 ```
 QuakerCMS/
+├── .github/
+│   └── workflows/
+│       └── ci.yml         # GitHub Actions CI pipeline
 ├── src/                    # Django project root
 │   ├── core/              # Main Django app with settings
 │   ├── home/              # Home page app
@@ -210,6 +215,17 @@ QuakerCMS/
    ```
 
 6. Push your branch and create a pull request
+
+## Continuous Integration
+
+The project uses GitHub Actions for continuous integration. When you create a pull request, the CI pipeline will automatically:
+
+- **Test Matrix**: Run tests on Python 3.12 and 3.13
+- **Code Quality**: Run pre-commit hooks including ruff linting and formatting
+- **Django Checks**: Run Django system checks and security checks
+- **Database**: Test database migrations
+
+All checks must pass before a pull request can be merged. You can view the status of these checks on your pull request page.
 
 ## Getting Help
 
