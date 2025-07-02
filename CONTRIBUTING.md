@@ -112,11 +112,18 @@ Log in to the admin interface using the superuser credentials you created in ste
 This project uses `ruff` for code linting and formatting. Before submitting changes:
 
 ```bash
-# Run linting
-uv run ruff check .
+# Run linting and automatically fix issues
+uv run ruff check --fix .
 
 # Run formatting
 uv run ruff format .
+```
+
+You can also run linting without auto-fixing to see what issues exist:
+
+```bash
+# Run linting without auto-fix (view-only)
+uv run ruff check .
 ```
 
 ### Adding Dependencies
@@ -173,7 +180,7 @@ QuakerCMS/
 
 4. Run linting and formatting:
    ```bash
-   uv run ruff check .
+   uv run ruff check --fix .
    uv run ruff format .
    ```
 
