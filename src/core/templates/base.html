@@ -6,21 +6,21 @@
         <meta charset="utf-8" />
         <title>
             {% block title %}
-            {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
-            {% endblock %}
+                {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
+            {% endblock title %}
             {% block title_suffix %}
-            {% wagtail_site as current_site %}
-            {% if current_site and current_site.site_name %}- {{ current_site.site_name }}{% endif %}
-            {% endblock %}
+                {% wagtail_site as current_site %}
+                {% if current_site and current_site.site_name %}- {{ current_site.site_name }}{% endif %}
+            {% endblock title_suffix %}
         </title>
         {% if page.search_description %}
-        <meta name="description" content="{{ page.search_description }}" />
+            <meta name="description" content="{{ page.search_description }}" />
         {% endif %}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         {# Force all links in the live preview panel to be opened in a new tab #}
         {% if request.in_preview_panel %}
-        <base target="_blank">
+            <base target="_blank">
         {% endif %}
 
         {# Global stylesheets #}
@@ -28,7 +28,7 @@
 
         {% block extra_css %}
         {# Override this in templates to add extra stylesheets #}
-        {% endblock %}
+        {% endblock extra_css %}
     </head>
 
     <body class="{% block body_class %}{% endblock %}">
@@ -41,6 +41,6 @@
 
         {% block extra_js %}
         {# Override this in templates to add extra javascript #}
-        {% endblock %}
+        {% endblock extra_js %}
     </body>
 </html>

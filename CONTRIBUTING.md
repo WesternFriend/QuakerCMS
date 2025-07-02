@@ -109,7 +109,25 @@ Log in to the admin interface using the superuser credentials you created in ste
 
 ### Code Quality
 
-This project uses `ruff` for code linting and formatting. Before submitting changes:
+This project uses `ruff` for code linting and formatting, along with `pre-commit` hooks to automatically maintain code quality.
+
+#### Pre-commit Hooks (Recommended)
+
+Pre-commit hooks will automatically run code quality checks before each commit:
+
+```bash
+# Install pre-commit hooks (one-time setup)
+uv run pre-commit install
+
+# Manually run hooks on all files (optional)
+uv run pre-commit run --all-files
+```
+
+Once installed, the hooks will run automatically on staged files before each commit.
+
+#### Manual Code Quality Checks
+
+You can also run code quality checks manually:
 
 ```bash
 # Run linting and automatically fix issues
@@ -162,7 +180,9 @@ QuakerCMS/
 │   ├── search/            # Search functionality
 │   └── manage.py          # Django management script
 ├── docs/                  # Documentation
+├── .pre-commit-config.yaml # Pre-commit hooks configuration
 ├── pyproject.toml         # Project configuration and dependencies
+├── requirements.txt       # Generated requirements file (for deployment)
 ├── uv.lock               # Locked dependency versions
 └── README.md             # Project overview
 ```
