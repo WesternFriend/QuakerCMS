@@ -31,7 +31,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Or install via pip:
+Alternatively, install via pip:
 ```bash
 pip install uv
 ```
@@ -102,8 +102,8 @@ python manage.py runserver
 
 Once the server is running, you can access:
 
-- **Main site**: http://127.0.0.1:8000/
-- **Wagtail admin**: http://127.0.0.1:8000/admin/
+- **Main site**: <http://127.0.0.1:8000/>
+- **Wagtail admin**: <http://127.0.0.1:8000/admin/>
 
 Log in to the admin interface using the superuser credentials you created in step 7.
 
@@ -123,7 +123,7 @@ docker-compose up --build
 docker-compose exec web python manage.py createsuperuser
 ```
 
-Access the site at http://localhost:8000/
+Access the site at <http://localhost:8000/>
 
 ## Development Workflow
 
@@ -203,7 +203,7 @@ uv sync --upgrade
 
 ## Project Structure
 
-```
+```text
 QuakerCMS/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/    # Issue templates for bugs, features, questions
