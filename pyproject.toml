@@ -7,8 +7,8 @@ name = "QuakerCMS"
 version = "0.1.0"
 description = "A content management system for Quaker communities."
 authors = [
-    "Brylie Christopher Oxley <brylie@amble.fi>",
-    "John Inman <jfinmaniv@icloud.com>"
+    {name = "Brylie Christopher Oxley", email = "brylie@amble.fi"},
+    {name = "John Inman", email = "jfinmaniv@icloud.com"}
 ]
 license = "AGPL-3.0-or-later"
 readme = "README.md"
