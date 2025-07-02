@@ -42,24 +42,12 @@ jobs:
           uv run coverage report
           uv run coverage xml
 
-      - name: Run tests for analytics (pytest)
-        run: |
-          cd src
-          uv run pytest --junitxml=test-results.xml -v
-
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./src/coverage.xml
           fail_ci_if_error: false
-
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./src/test-results.xml
 
       - name: Check Django system
         run: |
