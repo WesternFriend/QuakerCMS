@@ -17,6 +17,8 @@ dependencies = [
 dev = [
     "coverage>=7.9.1",
     "pre-commit>=4.2.0",
+    "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
     "ruff>=0.12.1",
 ]
 

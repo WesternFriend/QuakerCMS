@@ -179,8 +179,11 @@ uv add --dev package-name
 ### Running Tests
 
 ```bash
-# Run tests
+# Run tests with Django test runner
 python manage.py test
+
+# Run tests with pytest (alternative)
+uv run pytest
 
 # Run tests with coverage
 coverage run --source='.' manage.py test
