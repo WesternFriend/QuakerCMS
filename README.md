@@ -75,7 +75,7 @@ QuakerCMS is designed to handle the specific types of content that Quaker commun
 
 ### Community Members
 - **Meeting Attenders** - Access community content and internal resources
-- **Researchers** - Scholars and historians studying Quaker writings and decisions
+- **Researchers** - Scholars and historians studying _about_ Quaker writings and decisions
 - **Other Meetings** - Discover and learn from content published by peer communities
 
 ## Getting Started
