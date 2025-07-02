@@ -35,10 +35,18 @@ jobs:
           cd src
           uv run python manage.py migrate
 
-      - name: Run Django tests
+      - name: Run Django tests with coverage
         run: |
           cd src
-          uv run python manage.py test
+          uv run coverage run --source='.' manage.py test
+          uv run coverage report
+          uv run coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./src/coverage.xml
+          fail_ci_if_error: false
 
       - name: Check Django system
         run: |

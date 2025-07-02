@@ -1,5 +1,11 @@
 # QuakerCMS
 
+[![CI](https://github.com/WesternFriend/QuakerCMS/workflows/CI/badge.svg)](https://github.com/WesternFriend/QuakerCMS/actions)
+[![codecov](https://codecov.io/gh/WesternFriend/QuakerCMS/branch/main/graph/badge.svg)](https://codecov.io/gh/WesternFriend/QuakerCMS)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Django 5.2+](https://img.shields.io/badge/django-5.2+-green.svg)](https://djangoproject.com/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 A specialized content management system designed for Quaker meetings and worship groups to publish and share their spiritual writings, announcements, and community content.
 
 ## Purpose

@@ -10,6 +10,8 @@ Thank you for your interest in contributing to QuakerCMS! This guide will help y
 
 ## Development Environment Setup
 
+### Option 1: Local Development (Recommended)
+
 ### 1. Clone the Repository
 
 ```bash
@@ -105,6 +107,24 @@ Once the server is running, you can access:
 
 Log in to the admin interface using the superuser credentials you created in step 7.
 
+### Option 2: Docker Development
+
+For a quick setup using Docker:
+
+```bash
+# Clone the repository
+git clone https://github.com/WesternFriend/QuakerCMS.git
+cd QuakerCMS
+
+# Build and run with Docker Compose
+docker-compose up --build
+
+# In another terminal, create a superuser
+docker-compose exec web python manage.py createsuperuser
+```
+
+Access the site at http://localhost:8000/
+
 ## Development Workflow
 
 ### Code Quality
@@ -159,7 +179,13 @@ uv add --dev package-name
 ### Running Tests
 
 ```bash
+# Run tests
 python manage.py test
+
+# Run tests with coverage
+coverage run --source='.' manage.py test
+coverage report
+coverage html  # Generate HTML coverage report
 ```
 
 Note: All tests also run automatically in our GitHub Actions CI pipeline when you create a pull request.
@@ -177,8 +203,11 @@ uv sync --upgrade
 ```
 QuakerCMS/
 ├── .github/
-│   └── workflows/
-│       └── ci.yml         # GitHub Actions CI pipeline
+│   ├── ISSUE_TEMPLATE/    # Issue templates for bugs, features, questions
+│   ├── workflows/
+│   │   └── ci.yml         # GitHub Actions CI pipeline
+│   ├── dependabot.yml    # Automated dependency updates
+│   └── pull_request_template.md # PR template
 ├── src/                    # Django project root
 │   ├── core/              # Main Django app with settings
 │   ├── home/              # Home page app
@@ -186,8 +215,12 @@ QuakerCMS/
 │   └── manage.py          # Django management script
 ├── docs/                  # Documentation
 ├── .pre-commit-config.yaml # Pre-commit hooks configuration
+├── CHANGELOG.md           # Project changelog
+├── docker-compose.yml     # Docker development environment
+├── Dockerfile             # Docker configuration
 ├── pyproject.toml         # Project configuration and dependencies
 ├── requirements.txt       # Generated requirements file (for deployment)
+├── SECURITY.md            # Security policy
 ├── uv.lock               # Locked dependency versions
 └── README.md             # Project overview
 ```
