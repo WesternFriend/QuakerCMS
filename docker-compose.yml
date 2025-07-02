@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - uv-cache:/tmp/uv-cache
+    environment:
+      - DEBUG=1
+    stdin_open: true
+    tty: true
+
+volumes:
+  uv-cache:
