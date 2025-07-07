@@ -67,7 +67,7 @@ sqlparse==0.5.3
     # via django
 telepath==0.3.1
     # via wagtail
-typing-extensions==4.14.0
+typing-extensions==4.14.1
     # via
     #   beautifulsoup4
     #   django-stubs-ext
