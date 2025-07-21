@@ -76,5 +76,5 @@ urllib3==2.5.0
     # via requests
 wagtail==7.0.1
     # via quakercms (pyproject.toml)
-willow==1.10.0
+willow==1.11.0
     # via wagtail
