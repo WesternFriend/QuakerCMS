@@ -57,7 +57,7 @@ pillow==11.3.0
     # via
     #   pillow-heif
     #   wagtail
-pillow-heif==0.21.0
+pillow-heif==1.1.0
     # via willow
 requests==2.32.4
     # via wagtail
