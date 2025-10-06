@@ -31,7 +31,7 @@ django-modelcluster==6.4
     # via wagtail
 django-permissionedforms==0.1
     # via wagtail
-django-stubs-ext==5.2.1
+django-stubs-ext==5.2.6
     # via django-tasks
 django-taggit==6.1.0
     # via wagtail
