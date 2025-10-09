@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
 ]
 
 MIDDLEWARE = [
@@ -86,6 +87,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
+# Site ID for django.contrib.sites
+SITE_ID = 1
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -120,7 +124,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+# Default fallback values for language settings
+DEFAULT_LANGUAGE_CODE = "en-us"
+DEFAULT_LANGUAGES = [("en", "English")]
+
+# These will be overridden by LocaleSettings if available
+# The actual values are loaded dynamically from the database via LocaleSettings
+LANGUAGE_CODE = DEFAULT_LANGUAGE_CODE
 
 TIME_ZONE = "UTC"
 
@@ -133,11 +143,18 @@ WAGTAIL_I18N_ENABLED = True
 
 # Available languages for both Django and Wagtail
 # These can be managed at runtime through the locales app
-WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
-    ("en", "English"),
-    ("es", "Spanish"),
-    ("fr", "French"),
-]
+# Default to a basic set, but these will be loaded from LocaleSettings when available
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = DEFAULT_LANGUAGES
+
+# Try to load language settings from database (will use defaults during initial setup)
+try:
+    from locales.utils import get_language_settings
+
+    LANGUAGE_CODE, WAGTAIL_CONTENT_LANGUAGES = get_language_settings()
+    LANGUAGES = WAGTAIL_CONTENT_LANGUAGES
+except Exception:
+    # Database not ready or tables don't exist yet (e.g., during initial migrations)
+    pass
 
 
 # Static files (CSS, JavaScript, Images)
