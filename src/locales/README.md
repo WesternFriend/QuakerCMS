@@ -13,14 +13,15 @@ The `locales` app allows administrators to configure site languages at runtime t
 
 ### Settings Flow
 
-1. **Default Fallbacks** are defined in `settings/base.py`:
-   - `DEFAULT_LANGUAGE_CODE = "en-us"`
-   - `DEFAULT_LANGUAGES = [("en", "English")]`
+1. **Centralized Constants** are defined in `core/constants.py`:
+   - `DEFAULT_LANGUAGE_CODE = "en-us"` - Fallback default language
+   - `DEFAULT_LANGUAGES = [("en", "English")]` - Fallback language list
+   - `LANGUAGE_CHOICES` - All available language options (19+ languages)
 
 2. **Runtime Loading**: On startup, the system attempts to load settings from `LocaleSettings` model:
    - Queries the database for the default Wagtail site's locale settings
    - If found, uses those values for `LANGUAGE_CODE`, `LANGUAGES`, and `WAGTAIL_CONTENT_LANGUAGES`
-   - If not found or database is unavailable (e.g., during migrations), falls back to defaults
+   - If not found or database is unavailable (e.g., during migrations), falls back to defaults from `core.constants`
 
 3. **Admin Configuration**: Administrators can set languages via:
    - Wagtail Admin → Settings → Locale Settings
@@ -68,11 +69,13 @@ This displays:
 
 1. Log into Wagtail Admin
 2. Go to **Settings** → **Locale Settings**
-3. Select:
-   - **Default Language**: The primary language for the site
-   - **Available Languages**: Comma-separated language codes (e.g., `en,es,fr`)
+3. Configure:
+   - **Default Language**: Select the primary language for the site from the dropdown
+   - **Available Languages**: Check the boxes for all languages you want to support
 4. Save changes
 5. Restart the application to apply changes
+
+**Note**: The available languages must include the default language. The admin interface uses checkboxes for easy selection and prevents errors from manually typing language codes.
 
 ### Accessing Settings in Code
 
@@ -104,17 +107,18 @@ Settings are available via the context processor:
 ### LocaleSettings
 
 **Fields:**
-- `default_language` (CharField): The default language code for the site
-- `available_languages` (TextField): Comma-separated list of available language codes
+- `default_language` (CharField): The default language code for the site (dropdown selection)
+- `available_languages` (JSONField): Array of language codes available on the site (checkbox selection in admin)
 
 **Methods:**
-- `get_available_languages_list()`: Returns list of tuples `[(code, name), ...]`
-- `clean()`: Validates that default language is included in available languages
+- `get_available_languages_list()`: Returns list of tuples `[(code, name), ...]` from the JSON array
+- `clean()`: Validates that default language is included in available languages and at least one language is selected
 
 **Properties:**
 - Site-specific (inherits from `BaseSiteSetting`)
 - Accessible via Wagtail admin Settings menu
 - Uses globe icon in admin
+- User-friendly checkbox interface for language selection
 
 ## Important Notes
 
@@ -128,6 +132,43 @@ Settings are available via the context processor:
    - Database connection issues
 
 4. **Wagtail Integration**: Works seamlessly with Wagtail's built-in i18n features and the `wagtail.locales` app
+
+5. **Centralized Constants**: All language-related constants are maintained in `core/constants.py` to ensure consistency across:
+   - Django settings (`settings/base.py`)
+   - Model choices (`locales/models.py`)
+   - Utility functions (`locales/utils.py`)
+   - This prevents constants from going out of sync and makes them easier to maintain
+
+## Architecture
+
+### File Structure
+
+```
+core/
+  constants.py          # Centralized language constants
+  settings/
+    base.py            # Imports constants and configures i18n
+
+locales/
+  models.py            # LocaleSettings model (imports LANGUAGE_CHOICES)
+  utils.py             # Helper functions (imports DEFAULT_* constants)
+  management/
+    commands/
+      show_language_settings.py  # Display current configuration
+```
+
+### Constant Definitions
+
+All language-related constants are defined in `core/constants.py`:
+
+- **DEFAULT_LANGUAGE_CODE**: Fallback language code when no settings configured
+- **DEFAULT_LANGUAGES**: Fallback language list (single tuple)
+- **LANGUAGE_CHOICES**: Complete list of all available languages for admin selection
+
+This centralized approach ensures that:
+- Settings and model choices always match
+- Constants are defined in one place
+- Adding new languages is simple (update `core/constants.py` only)
 
 ## Future Enhancements
 

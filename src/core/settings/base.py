@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+from core.constants import DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
+
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
@@ -123,10 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-# Default fallback values for language settings
-DEFAULT_LANGUAGE_CODE = "en-us"
-DEFAULT_LANGUAGES = [("en", "English")]
 
 # These will be overridden by LocaleSettings if available
 # The actual values are loaded dynamically from the database via LocaleSettings

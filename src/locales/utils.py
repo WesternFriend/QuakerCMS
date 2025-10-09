@@ -2,7 +2,7 @@
 Utility functions for loading locale settings dynamically.
 """
 
-from django.conf import settings
+from core.constants import DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
 
 
 def get_language_settings():
@@ -11,10 +11,6 @@ def get_language_settings():
 
     Returns a tuple of (language_code, languages_list).
     """
-    # Default fallbacks
-    default_language_code = getattr(settings, "DEFAULT_LANGUAGE_CODE", "en-us")
-    default_languages = getattr(settings, "DEFAULT_LANGUAGES", [("en", "English")])
-
     try:
         # Import here to avoid circular imports
         from wagtail.models import Site
@@ -39,9 +35,9 @@ def get_language_settings():
                 return language_code, languages
 
         # No site or settings found, use defaults
-        return default_language_code, default_languages
+        return DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
 
     except Exception:
         # Database not ready, tables don't exist, or other error
         # This happens during initial migrations or startup
-        return default_language_code, default_languages
+        return DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES

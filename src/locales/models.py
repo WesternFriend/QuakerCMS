@@ -1,29 +1,34 @@
+from django import forms
 from django.db import models
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 
-# Common language choices that can be used across Quaker communities
-LANGUAGE_CHOICES = [
-    ("en", "English"),
-    ("es", "Spanish / Español"),
-    ("fr", "French / Français"),
-    ("de", "German / Deutsch"),
-    ("pt", "Portuguese / Português"),
-    ("it", "Italian / Italiano"),
-    ("nl", "Dutch / Nederlands"),
-    ("da", "Danish / Dansk"),
-    ("sv", "Swedish / Svenska"),
-    ("no", "Norwegian / Norsk"),
-    ("fi", "Finnish / Suomi"),
-    ("is", "Icelandic / Íslenska"),
-    ("ru", "Russian / Русский"),
-    ("ja", "Japanese / 日本語"),
-    ("zh-hans", "Chinese Simplified / 简体中文"),
-    ("zh-hant", "Chinese Traditional / 繁體中文"),
-    ("ko", "Korean / 한국어"),
-    ("ar", "Arabic / العربية"),
-    ("sw", "Swahili / Kiswahili"),
-]
+from core.constants import LANGUAGE_CHOICES
+
+
+class MultipleLanguageField(models.JSONField):
+    """Custom JSONField that works with CheckboxSelectMultiple widget."""
+
+    def formfield(self, **kwargs):
+        """Return a MultipleChoiceField for use in forms."""
+        return forms.MultipleChoiceField(
+            choices=LANGUAGE_CHOICES,
+            widget=forms.CheckboxSelectMultiple,
+            required=False,
+            **kwargs,
+        )
+
+    def get_prep_value(self, value):
+        """Convert form data to JSON for storage."""
+        if value is None:
+            return []
+        # If it's already a list, use it directly
+        if isinstance(value, list):
+            return value
+        # If it's a string (shouldn't happen, but just in case)
+        if isinstance(value, str):
+            return [value]
+        return list(value)
 
 
 @register_setting(icon="globe")
@@ -39,11 +44,12 @@ class LocaleSettings(BaseSiteSetting):
         help_text="The default language for this site",
     )
 
-    # Using a simple text field to store multiple language codes (comma-separated)
-    # This approach works well for the expected number of languages
-    available_languages = models.TextField(
-        default="en",
-        help_text="Comma-separated list of language codes (e.g., 'en,es,fr'). Must include the default language.",
+    # Store selected languages as a JSON array of language codes
+    # This provides a better admin UI with checkboxes
+    available_languages = MultipleLanguageField(
+        default=list,
+        blank=True,
+        help_text="Select the languages available on this site. Must include the default language.",
     )
 
     panels = [
@@ -63,9 +69,13 @@ class LocaleSettings(BaseSiteSetting):
         """
         Returns a list of tuples (code, name) for available languages.
         """
-        codes = [code.strip() for code in self.available_languages.split(",")]
+        if not self.available_languages:
+            return []
+
         return [
-            (code, dict(LANGUAGE_CHOICES).get(code, code)) for code in codes if code
+            (code, dict(LANGUAGE_CHOICES).get(code, code))
+            for code in self.available_languages
+            if code
         ]
 
     def clean(self):
@@ -74,8 +84,14 @@ class LocaleSettings(BaseSiteSetting):
         """
         from django.core.exceptions import ValidationError
 
-        available = [code.strip() for code in self.available_languages.split(",")]
-        if self.default_language not in available:
+        if not self.available_languages:
+            raise ValidationError(
+                {
+                    "available_languages": "Please select at least one language.",
+                },
+            )
+
+        if self.default_language not in self.available_languages:
             raise ValidationError(
                 {
                     "available_languages": "Available languages must include the default language.",
