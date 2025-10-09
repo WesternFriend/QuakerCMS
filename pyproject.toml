@@ -35,5 +35,36 @@ dev = [
 [tool.ruff.lint.per-file-ignores]
 "*/settings/*.py" = ["F403", "F405"]
 
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/migrations/*",
+    "*/management/commands/*",
+    "*/tests.py",
+    "*/test_*.py",
+    "*_tests.py",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/manage.py",
+    "*/wsgi.py",
+    "*/asgi.py",
+    "*/settings/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+precision = 2
+
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
