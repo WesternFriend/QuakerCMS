@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial project setup with Django and Wagtail CMS
 - Basic content management for Quaker communities
 - Pre-commit hooks for code quality
@@ -18,23 +19,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automated dependency updates with Dependabot
 
 ### Changed
+
 - N/A
 
 ### Deprecated
+
 - N/A
 
 ### Removed
+
 - N/A
 
 ### Fixed
+
 - N/A
 
 ### Security
+
 - Added security policy and vulnerability reporting process
 
 ## [0.1.0] - 2025-07-02
 
 ### Added
+
 - Initial release
 - Basic Django/Wagtail project structure
 - Home page and search functionality
