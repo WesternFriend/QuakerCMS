@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
-from core.constants import DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
+from core.constants import DEFAULT_LANGUAGE_CODE, LANGUAGE_CHOICES
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
@@ -29,9 +29,11 @@ INSTALLED_APPS = [
     "home",
     "search",
     "locales",
+    "content",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.settings",
+    "wagtail.contrib.simple_translation",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -135,20 +137,15 @@ USE_TZ = True
 # Wagtail internationalization
 WAGTAIL_I18N_ENABLED = True
 
-# Available languages for both Django and Wagtail
-# These can be managed at runtime through the locales app
-# Default to a basic set, but these will be loaded from LocaleSettings when available
-WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = DEFAULT_LANGUAGES
+# Available languages for Django
+# We set this to ALL possible languages from LANGUAGE_CHOICES.
+# Wagtail will only show/use locales that exist in the Locale model,
+# which are managed through the LocaleSettings admin interface.
+LANGUAGES = LANGUAGE_CHOICES
 
-# Try to load language settings from database (will use defaults during initial setup)
-try:
-    from locales.utils import get_language_settings
-
-    LANGUAGE_CODE, WAGTAIL_CONTENT_LANGUAGES = get_language_settings()
-    LANGUAGES = WAGTAIL_CONTENT_LANGUAGES
-except Exception:
-    # Database not ready or tables don't exist yet (e.g., during initial migrations)
-    pass
+# Wagtail content languages - same as LANGUAGES
+# The actual available locales are determined by what exists in the Locale model
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
 
 
 # Static files (CSS, JavaScript, Images)

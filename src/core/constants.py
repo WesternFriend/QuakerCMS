@@ -14,7 +14,7 @@ Usage:
 
 # Default fallback values for language settings
 # These are used when no LocaleSettings have been configured
-DEFAULT_LANGUAGE_CODE = "en-us"
+DEFAULT_LANGUAGE_CODE = "en"
 DEFAULT_LANGUAGES = [("en", "English")]
 
 # Common language choices available across Quaker communities worldwide

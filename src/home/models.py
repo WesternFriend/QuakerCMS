@@ -6,3 +6,6 @@ class HomePage(Page):
 
     # Only allow one HomePage instance
     max_count = 1
+
+    # Allow ContentPage as a child
+    subpage_types = ["content.ContentPage"]

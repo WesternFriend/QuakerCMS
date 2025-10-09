@@ -26,8 +26,10 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Translatable URLs
-# These will be available under a language code prefix (e.g., /en/search/, /fr/search/)
+# Wagtail's i18n support requires i18n_patterns to add language prefixes to URLs.
+# With prefix_default_language=False, English pages won't have /en/ prefix.
 urlpatterns += i18n_patterns(
     path("search/", search_views.search, name="search"),
     path("", include(wagtail_urls)),
+    prefix_default_language=False,
 )
