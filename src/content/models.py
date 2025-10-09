@@ -26,6 +26,12 @@ class ContentPage(Page):
         FieldPanel("body"),
     ]
 
+    subpage_types = ["content.ContentPage"]
+    parent_page_types = [
+        "home.HomePage",
+        "content.ContentPage",
+    ]
+
     class Meta:
         verbose_name = "Content Page"
         verbose_name_plural = "Content Pages"
