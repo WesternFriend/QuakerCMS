@@ -331,3 +331,381 @@ class LanguageChoicesIntegrityTests(TestCase):
                 codes,
                 f"Scandinavian language '{lang}' not in LANGUAGE_CHOICES",
             )
+
+
+class LocaleSettingsSyncTests(TestCase, WagtailTestUtils):
+    """
+    Test automatic syncing between LocaleSettings and Locale model.
+
+    CRITICAL: These tests ensure content is protected from accidental deletion.
+    """
+
+    def setUp(self):
+        """Set up test data with locales and pages."""
+        from wagtail.models import Locale, Page
+
+        from home.models import HomePage
+
+        # Get or create English locale
+        self.locale_en, _ = Locale.objects.get_or_create(language_code="en")
+
+        # Get root page
+        self.root = Page.get_first_root_node()
+
+        # Create English homepage with unique slug
+        self.home_en = HomePage(
+            title="Test Home",
+            slug="test-home-sync",
+            locale=self.locale_en,
+        )
+        self.root.add_child(instance=self.home_en)
+
+        # Create site
+        self.site = Site.objects.create(
+            hostname="test-sync.localhost",
+            root_page=self.home_en,
+            is_default_site=False,
+            site_name="Test Sync Site",
+        )
+
+    def test_locale_created_on_save(self):
+        """Test that saving LocaleSettings creates new Locale records."""
+        from wagtail.models import Locale
+
+        # Initially only English exists
+        self.assertEqual(Locale.objects.count(), 1)
+
+        # Create settings with Finnish
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "fi"],
+        )
+
+        # Finnish locale should now exist
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+        self.assertEqual(Locale.objects.count(), 2)
+
+    def test_multiple_locales_created_at_once(self):
+        """Test creating multiple locales simultaneously."""
+        from wagtail.models import Locale
+
+        # Create settings with three languages
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "fi", "es", "fr"],
+        )
+
+        # All locales should exist
+        self.assertTrue(Locale.objects.filter(language_code="en").exists())
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+        self.assertTrue(Locale.objects.filter(language_code="es").exists())
+        self.assertTrue(Locale.objects.filter(language_code="fr").exists())
+        self.assertEqual(Locale.objects.count(), 4)
+
+    def test_cannot_remove_locale_with_pages(self):
+        """
+        CRITICAL TEST: Ensure content protection works.
+        Test that removing a locale with pages raises validation error.
+        """
+        from wagtail.models import Locale
+
+        from content.models import ContentPage
+        from home.models import HomePage
+
+        # Create Finnish locale and pages
+        locale_fi, _ = Locale.objects.get_or_create(language_code="fi")
+
+        home_fi = HomePage(
+            title="Koti",
+            slug="koti",
+            locale=locale_fi,
+            translation_key=self.home_en.translation_key,
+        )
+        self.root.add_child(instance=home_fi)
+
+        # Create a Finnish content page
+        finnish_page = ContentPage(
+            title="Testi Sivu",
+            slug="testi-sivu",
+            locale=locale_fi,
+        )
+        home_fi.add_child(instance=finnish_page)
+
+        # Create LocaleSettings with both languages
+        settings = LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "fi"],
+        )
+
+        # Try to remove Finnish (should fail)
+        settings.available_languages = ["en"]
+
+        with self.assertRaises(ValidationError) as cm:
+            settings.clean()
+
+        # Check error message
+        error_dict = cm.exception.message_dict
+        self.assertIn("available_languages", error_dict)
+        error_message = error_dict["available_languages"][0]
+
+        # Should mention Finnish and page count
+        self.assertIn("Finnish", error_message)
+        self.assertIn("2", error_message)  # 2 pages: home + content page
+
+    def test_error_message_includes_page_count(self):
+        """Test that error message shows exact number of affected pages."""
+        from wagtail.models import Locale
+
+        from content.models import ContentPage
+        from home.models import HomePage
+
+        # Create Finnish locale
+        locale_fi, _ = Locale.objects.get_or_create(language_code="fi")
+
+        home_fi = HomePage(
+            title="Koti",
+            slug="koti",
+            locale=locale_fi,
+        )
+        self.root.add_child(instance=home_fi)
+
+        # Create multiple Finnish pages
+        for i in range(5):
+            page = ContentPage(
+                title=f"Finnish Page {i}",
+                slug=f"finnish-page-{i}",
+                locale=locale_fi,
+            )
+            home_fi.add_child(instance=page)
+
+        # Create settings
+        settings = LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "fi"],
+        )
+
+        # Try to remove Finnish
+        settings.available_languages = ["en"]
+
+        with self.assertRaises(ValidationError) as cm:
+            settings.clean()
+
+        error_message = cm.exception.message_dict["available_languages"][0]
+        # Should show 6 pages (1 home + 5 content pages)
+        self.assertIn("6", error_message)
+
+    def test_can_remove_locale_without_pages(self):
+        """Test that removing a locale without pages is allowed."""
+        from wagtail.models import Locale
+
+        # Create Spanish locale without any pages
+        Locale.objects.create(language_code="es")
+
+        settings = LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "es"],
+        )
+
+        # Remove Spanish (should work because no pages)
+        settings.available_languages = ["en"]
+        settings.clean()  # Should not raise
+        settings.save()
+
+    def test_locales_not_automatically_deleted(self):
+        """
+        Test that Locale records aren't automatically deleted from database.
+        They may still exist even if removed from LocaleSettings.
+        """
+        from wagtail.models import Locale
+
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "fi", "es"],
+        )
+
+        # All locales should exist
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+        self.assertTrue(Locale.objects.filter(language_code="es").exists())
+
+        # Remove Finnish and Spanish from settings (no pages exist, so it's valid)
+        settings = LocaleSettings.objects.get(site=self.site)
+        settings.available_languages = ["en"]
+        settings.save()
+
+        # Locales should still exist in database
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+        self.assertTrue(Locale.objects.filter(language_code="es").exists())
+
+    def test_validation_on_update_not_create(self):
+        """Test that content validation only happens on update, not initial creation."""
+        from wagtail.models import Locale
+
+        from home.models import HomePage
+
+        # Create Finnish locale with pages
+        locale_fi, _ = Locale.objects.get_or_create(language_code="fi")
+        home_fi = HomePage(
+            title="Koti",
+            slug="koti",
+            locale=locale_fi,
+        )
+        if self.root:
+            self.root.add_child(instance=home_fi)
+
+        # Creating NEW settings should work even if Finnish has pages
+        # (because we're not "removing" it, we're just not including it initially)
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en"],
+        )
+
+        # Verify settings were created successfully
+        settings = LocaleSettings.objects.get(site=self.site)
+        self.assertEqual(settings.available_languages, ["en"])
+
+
+class SyncLocalesCommandTests(TestCase):
+    """Test the sync_locales management command."""
+
+    def setUp(self):
+        """Set up test data."""
+        from wagtail.models import Locale, Page
+
+        from home.models import HomePage
+
+        # Create English locale
+        self.locale_en, _ = Locale.objects.get_or_create(language_code="en")
+
+        # Create pages
+        self.root = Page.get_first_root_node()
+        self.home = HomePage(
+            title="Command Test Home",
+            slug="command-test-home",
+            locale=self.locale_en,
+        )
+        self.root.add_child(instance=self.home)
+
+        # Create site
+        self.site = Site.objects.create(
+            hostname="command-test.localhost",
+            root_page=self.home,
+            is_default_site=False,
+            site_name="Command Test Site",
+        )
+
+    def test_command_creates_missing_locales(self):
+        """Test that the command creates missing locales."""
+        from io import StringIO
+
+        from django.core.management import call_command
+        from wagtail.models import Locale
+
+        # Create settings with multiple languages
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en", "fi", "es"],
+        )
+
+        # Delete Finnish locale to simulate missing locale
+        Locale.objects.filter(language_code="fi").delete()
+
+        # Run command
+        out = StringIO()
+        call_command("sync_locales", stdout=out)
+
+        # Finnish should be recreated
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+        output = out.getvalue()
+        self.assertIn("fi", output.lower())
+
+    def test_command_with_no_settings(self):
+        """Test command behaves gracefully when no LocaleSettings exist."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Ensure no LocaleSettings exist
+        LocaleSettings.objects.all().delete()
+
+        # Run command
+        out = StringIO()
+        call_command("sync_locales", stdout=out)
+
+        # Should report no settings found
+        output = out.getvalue()
+        self.assertIn("No LocaleSettings", output)
+
+    def test_command_reports_locales_with_content(self):
+        """Test that command reports when locales have content and can't be removed."""
+        from io import StringIO
+
+        from django.core.management import call_command
+        from wagtail.models import Locale
+
+        from home.models import HomePage
+
+        # Create Finnish locale with pages
+        locale_fi, _ = Locale.objects.get_or_create(language_code="fi")
+        home_fi = HomePage(
+            title="Koti",
+            slug="koti",
+            locale=locale_fi,
+        )
+        if self.root:
+            self.root.add_child(instance=home_fi)
+
+        # Create settings with only English
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en"],
+        )
+
+        # Run command with --remove-unused
+        out = StringIO()
+        call_command("sync_locales", "--remove-unused", stdout=out)
+
+        output = out.getvalue()
+
+        # Should report that Finnish can't be removed
+        self.assertIn("fi", output.lower())
+        self.assertIn("cannot remove", output.lower())
+
+        # Finnish should still exist
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+
+    def test_command_removes_unused_locales(self):
+        """Test that command removes locales without content when --remove-unused is used."""
+        from io import StringIO
+
+        from django.core.management import call_command
+        from wagtail.models import Locale
+
+        # Create Spanish locale without any pages
+        Locale.objects.create(language_code="es")
+
+        # Create settings with only English
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en"],
+        )
+
+        # Run command with --remove-unused
+        out = StringIO()
+        call_command("sync_locales", "--remove-unused", stdout=out)
+
+        # Spanish should be removed
+        self.assertFalse(Locale.objects.filter(language_code="es").exists())
+
+        output = out.getvalue()
+        self.assertIn("es", output.lower())
+        self.assertIn("removed", output.lower())
