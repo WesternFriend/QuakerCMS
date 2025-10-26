@@ -33,26 +33,12 @@ def get_language_settings():
                 language_code = locale_settings.default_language
                 languages = locale_settings.get_available_languages_list()
 
-                # DEBUG: Print what we found
-                import sys
-
-                print(
-                    f"DEBUG: Loaded from DB - code: {language_code}, languages: {languages}",
-                    file=sys.stderr,
-                )
-
                 return language_code, languages
 
         # No site or settings found, use defaults
-        import sys
-
-        print("DEBUG: No site or settings, using defaults", file=sys.stderr)
         return DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
 
-    except Exception as e:
+    except Exception:
         # Database not ready, tables don't exist, or other error
         # This happens during initial migrations or startup
-        import sys
-
-        print(f"DEBUG: Exception in get_language_settings: {e}", file=sys.stderr)
         return DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
