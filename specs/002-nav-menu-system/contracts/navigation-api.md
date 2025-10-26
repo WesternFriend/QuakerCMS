@@ -31,6 +31,7 @@ This document defines the contract between the navigation system backend (templa
 **Template**: `navigation/navigation.html`
 
 **Behavior**:
+
 - Returns empty dict if no menu configured (template renders nothing)
 - Filters out deleted/unpublished pages automatically
 - Resolves pages to current locale with fallback to default
