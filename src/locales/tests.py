@@ -682,6 +682,64 @@ class SyncLocalesCommandTests(TestCase):
         # Finnish should still exist
         self.assertTrue(Locale.objects.filter(language_code="fi").exists())
 
+    def test_command_shows_model_breakdown_for_locales_with_content(self):
+        """Test that command shows which models prevent locale removal."""
+        from io import StringIO
+
+        from django.core.management import call_command
+        from wagtail.models import Locale
+
+        from content.models import ContentPage
+        from home.models import HomePage
+
+        # Create Finnish locale with multiple page types
+        locale_fi, _ = Locale.objects.get_or_create(language_code="fi")
+        home_fi = HomePage(
+            title="Koti",
+            slug="koti-breakdown",
+            locale=locale_fi,
+        )
+        if self.root:
+            self.root.add_child(instance=home_fi)
+
+        # Add ContentPage
+        content_fi = ContentPage(
+            title="Sisältö",
+            slug="sisalto",
+            locale=locale_fi,
+        )
+        home_fi.add_child(instance=content_fi)
+
+        # Create settings with only English
+        LocaleSettings.objects.create(
+            site=self.site,
+            default_language="en",
+            available_languages=["en"],
+        )
+
+        # Run command with --remove-unused
+        out = StringIO()
+        call_command("sync_locales", "--remove-unused", stdout=out)
+
+        output = out.getvalue()
+
+        # Should show model breakdown
+        # Note: wagtailcore.Page is also counted because it has a locale FK
+        # and both HomePage and ContentPage inherit from it
+        self.assertIn("home.HomePage", output)
+        self.assertIn("content.ContentPage", output)
+        self.assertIn("wagtailcore.Page", output)
+        # Should show counts for each model
+        self.assertIn("1 object(s)", output)
+        # Should show total (HomePage + ContentPage + 2 Page records)
+        self.assertIn("4 related object(s)", output)
+
+        # Finnish should still exist
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+
+        # Finnish should still exist
+        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
+
     def test_command_removes_unused_locales(self):
         """Test that command removes locales without content when --remove-unused is used."""
         from io import StringIO

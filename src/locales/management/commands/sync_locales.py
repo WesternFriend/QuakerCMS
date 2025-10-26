@@ -5,8 +5,10 @@ This command creates Locale records for all languages configured in LocaleSettin
 and optionally removes unused locales that have no associated content.
 """
 
+from django.apps import apps
 from django.core.management.base import BaseCommand
-from wagtail.models import Locale, Page
+from django.db import models
+from wagtail.models import Locale
 
 from locales.models import LocaleSettings
 
@@ -18,8 +20,49 @@ class Command(BaseCommand):
         parser.add_argument(
             "--remove-unused",
             action="store_true",
-            help="Remove locales that have no associated pages or snippets",
+            help="Remove locales that have no associated content in any translatable model",
         )
+
+    def get_translatable_models(self):
+        """
+        Get all models that have a locale ForeignKey field.
+
+        Returns:
+            list: List of model classes that are translatable
+        """
+        translatable_models = []
+        for model in apps.get_models():
+            # Check if model has a 'locale' field that's a ForeignKey
+            for field in model._meta.get_fields():
+                if (
+                    field.name == "locale"
+                    and isinstance(field, models.ForeignKey)
+                    and field.related_model == Locale
+                ):
+                    translatable_models.append(model)
+                    break
+        return translatable_models
+
+    def get_locale_usage(self, locale):
+        """
+        Check all translatable models for usage of a specific locale.
+
+        Args:
+            locale: The Locale instance to check
+
+        Returns:
+            dict: Dictionary mapping model names to counts of objects using this locale
+        """
+        usage = {}
+        translatable_models = self.get_translatable_models()
+
+        for model in translatable_models:
+            count = model.objects.filter(locale=locale).count()
+            if count > 0:
+                model_name = f"{model._meta.app_label}.{model.__name__}"
+                usage[model_name] = count
+
+        return usage
 
     def handle(self, *args, **options):
         self.stdout.write("Syncing locales with LocaleSettings...")
@@ -72,17 +115,27 @@ class Command(BaseCommand):
 
             for language_code, locale in existing_locales.items():
                 if language_code not in desired_languages:
-                    # Check if locale has any content
-                    page_count = Page.objects.filter(locale=locale).count()
+                    # Check if locale has any content in any translatable model
+                    usage = self.get_locale_usage(locale)
 
-                    if page_count > 0:
+                    if usage:
+                        # Locale is in use - cannot delete
+                        total_count = sum(usage.values())
                         self.stdout.write(
                             self.style.WARNING(
                                 f"✗ Cannot remove {language_code}: "
-                                f"has {page_count} associated page(s)",
+                                f"{total_count} related object(s) exist",
                             ),
                         )
+                        # Log which models are using this locale
+                        for model_name, count in sorted(usage.items()):
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"  - {model_name}: {count} object(s)",
+                                ),
+                            )
                     else:
+                        # No related objects - safe to delete
                         locale.delete()
                         self.stdout.write(
                             self.style.SUCCESS(
