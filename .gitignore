@@ -109,3 +109,9 @@ venv.bak/
 
 # MacOS
 .DS_Store
+
+# Node.js (for Tailwind CSS theme app)
+node_modules/
+
+# Tailwind CSS compiled output
+src/theme/static/css/dist/
