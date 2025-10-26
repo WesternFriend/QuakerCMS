@@ -2,7 +2,11 @@
 Utility functions for loading locale settings dynamically.
 """
 
+import logging
+
 from core.constants import DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
+
+logger = logging.getLogger(__name__)
 
 
 def get_language_settings():
@@ -38,7 +42,8 @@ def get_language_settings():
         # No site or settings found, use defaults
         return DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
 
-    except Exception:
+    except Exception as e:
         # Database not ready, tables don't exist, or other error
         # This happens during initial migrations or startup
+        logger.debug("Could not load language settings from database: %s", e)
         return DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
