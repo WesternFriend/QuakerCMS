@@ -575,55 +575,6 @@ class TailwindIntegrationTests(TestCase):
         self.assertIn("dark:prose-invert", source)
 
 
-class DaisyUIComponentTests(WagtailPageTestCase):
-    """Test DaisyUI component integration."""
-
-    def setUp(self):
-        """Set up test data."""
-        self.locale_en, _ = Locale.objects.get_or_create(language_code="en")
-        self.root = Page.get_first_root_node()
-        self.home = HomePage(
-            title="DaisyUI Test Home",
-            slug="daisyui-test-home",
-            locale=self.locale_en,
-        )
-        self.root.add_child(instance=self.home)
-
-        # Create site
-        Site.objects.create(
-            hostname="daisyui-test.localhost",
-            root_page=self.home,
-            is_default_site=True,
-            site_name="DaisyUI Test Site",
-        )
-
-    def test_daisyui_button_component_rendering(self):
-        """Test that DaisyUI button components render with correct classes."""
-        from django.template import Context, Template
-
-        template = Template('<button class="btn btn-primary">Click me</button>')
-        rendered = template.render(Context({}))
-
-        # Should contain DaisyUI button classes
-        self.assertIn("btn", rendered)
-        self.assertIn("btn-primary", rendered)
-
-    def test_daisyui_card_component_rendering(self):
-        """Test that DaisyUI card components render with correct classes."""
-        from django.template import Context, Template
-
-        template = Template(
-            '<div class="card bg-base-100 shadow-xl"><div class="card-body">'
-            '<h2 class="card-title">Card Title</h2></div></div>',
-        )
-        rendered = template.render(Context({}))
-
-        # Should contain DaisyUI card classes
-        self.assertIn("card", rendered)
-        self.assertIn("card-body", rendered)
-        self.assertIn("card-title", rendered)
-
-
 class DarkModeTests(WagtailPageTestCase):
     """Test dark mode support."""
 

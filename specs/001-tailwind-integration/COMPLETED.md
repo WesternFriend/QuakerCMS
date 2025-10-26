@@ -48,21 +48,20 @@ Successfully integrated Tailwind CSS v4 with DaisyUI components into QuakerCMS, 
 | SC-004 | Dark mode          | ✓                | System preference detection              | ✅      |
 | SC-005 | Bundle size        | < 50KB gzipped   | 9.54 KB                                  | ✅      |
 | SC-006 | Performance        | < 200ms overhead | Minimal impact                           | ✅      |
-| SC-007 | Tests              | Comprehensive    | 8 Tailwind tests (8 passing, 0 failures) | ✅      |
+| SC-007 | Tests              | Comprehensive    | 6 Tailwind tests (6 passing, 0 failures) | ✅      |
 | SC-008 | Accessibility      | WCAG AA          | DaisyUI built-in support                 | ✅      |
 | SC-009 | Responsive         | 320px-2560px     | Tailwind responsive utilities            | ✅      |
 | SC-010 | Documentation      | Complete         | quickstart.md + examples                 | ✅      |
 
 ## Test Results
 
-**Total Tests**: 34 tests in content app
-**Passing**: 34 tests ✅ **(100% pass rate)**
+**Total Tests**: 32 tests in content app
+**Passing**: 32 tests ✅ **(100% pass rate)**
 **Failed**: 0 tests
 
 ### Test Categories
 
 - ✅ **TailwindIntegrationTests**: 3 tests (validates template tags, prose classes in templates)
-- ✅ **DaisyUIComponentTests**: 2 tests (validates button and card component rendering)
 - ✅ **DarkModeTests**: 3 tests (validates prose-invert classes and dark theme config)
 - ✅ **ContentPageModelTests**: 13 tests (existing content app tests still passing)
 - ✅ **ContentPageStreamFieldTests**: 8 tests (existing StreamField tests still passing)
