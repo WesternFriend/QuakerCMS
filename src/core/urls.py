@@ -25,6 +25,11 @@ if settings.DEBUG:
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+    # Browser reload for Tailwind CSS development
+    urlpatterns += [
+        path("__reload__/", include("django_browser_reload.urls")),
+    ]
+
 # Translatable URLs
 # Wagtail's i18n support requires i18n_patterns to add language prefixes to URLs.
 # With prefix_default_language=False, English pages won't have /en/ prefix.

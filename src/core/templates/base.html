@@ -1,4 +1,4 @@
-{% load static wagtailcore_tags wagtailuserbar %}
+{% load static tailwind_tags wagtailcore_tags wagtailuserbar %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +22,10 @@
         {% if request.in_preview_panel %}
             <base target="_blank">
         {% endif %}
+
+        {# Tailwind CSS #}
+        {% tailwind_preload_css %}
+        {% tailwind_css %}
 
         {# Global stylesheets #}
         <link rel="stylesheet" type="text/css" href="{% static 'css/core.css' %}">

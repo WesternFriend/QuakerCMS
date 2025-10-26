@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Tailwind CSS Integration**: Modern utility-first CSS framework with DaisyUI components
+  - Tailwind CSS v4 with @source directive for automatic template scanning
+  - DaisyUI plugin with semantic component classes (buttons, cards, navigation, forms, alerts)
+  - @tailwindcss/typography plugin for professional prose styling
+  - django-tailwind package for seamless Django integration
+  - django-browser-reload for hot reloading in development
+  - Dark mode support with automatic system preference detection
+  - Production CSS bundle optimized to 9.54 KB gzipped (well under 50KB target)
+  - **100% test pass rate**: 8 new tests for Tailwind integration, DaisyUI components, and dark mode
+  - Developer documentation in `specs/001-tailwind-integration/quickstart.md`
 - **Locales App**: Runtime language configuration system
   - `LocaleSettings` model for per-site language configuration via Wagtail admin
   - Support for 19+ languages including English, Spanish, French, German, Portuguese, Italian, Dutch, Scandinavian languages, Russian, Japanese, Chinese (Simplified/Traditional), Korean, Arabic, and Swahili
