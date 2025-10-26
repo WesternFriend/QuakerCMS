@@ -131,15 +131,18 @@ Phase 7 (Polish)
 - [ ] T007 [P] [US1] Create PageLinkBlock in src/navigation/blocks.py with page, custom_title, and anchor fields
 - [ ] T008 [P] [US1] Create ExternalLinkBlock in src/navigation/blocks.py with url, title, and anchor fields
 - [ ] T009 [P] [US1] Create TopLevelMenuBlock StreamBlock in src/navigation/blocks.py allowing page_link and external_link
-- [ ] T010 [US1] Create NavigationMenuSetting model in src/navigation/models.py with menu_items StreamField using TopLevelMenuBlock
-- [ ] T011 [US1] Register NavigationMenuSetting as BaseSiteSetting with @register_setting decorator in src/navigation/models.py
-- [ ] T012 [US1] Create and run migration for NavigationMenuSetting model
-- [ ] T013 [US1] Create navigation_tags.py in src/navigation/templatetags/ with navigation_menu inclusion tag
-- [ ] T014 [US1] Implement process_menu_item() helper function in navigation_tags.py to handle page_link and external_link types
-- [ ] T015 [US1] Add locale resolution logic to process_menu_item() with fallback to default locale
-- [ ] T016 [US1] Create basic navigation.html template in src/navigation/templates/navigation/ with desktop menu structure
-- [ ] T017 [US1] Add {% navigation_menu %} tag to src/core/templates/base.html below skip link
-- [ ] T018 [US1] Test basic menu creation in admin and verify front-end display with multiple page links
+- [ ] T010 [P] [US1] Create StreamFieldTests class in src/navigation/tests.py to test block structure and field validation
+- [ ] T011 [US1] Create NavigationMenuSetting model in src/navigation/models.py with menu_items StreamField using TopLevelMenuBlock
+- [ ] T012 [US1] Register NavigationMenuSetting as BaseSiteSetting with @register_setting decorator in src/navigation/models.py
+- [ ] T013 [US1] Create and run migration for NavigationMenuSetting model
+- [ ] T014 [P] [US1] Create ModelTests class in src/navigation/tests.py to test NavigationMenuSetting creation and validation
+- [ ] T015 [US1] Create navigation_tags.py in src/navigation/templatetags/ with navigation_menu inclusion tag
+- [ ] T016 [US1] Implement process_menu_item() helper function in navigation_tags.py to handle page_link and external_link types
+- [ ] T017 [US1] Add locale resolution logic to process_menu_item() with fallback to default locale
+- [ ] T018 [US1] Create basic navigation.html template in src/navigation/templates/navigation/ with desktop menu structure
+- [ ] T019 [US1] Add {% navigation_menu %} tag to src/core/templates/base.html below skip link
+- [ ] T020 [US1] Test basic menu creation in admin and verify front-end display with multiple page links
+- [ ] T021 [P] [US1] Create IntegrationTests class in src/navigation/tests.py to test end-to-end menu rendering with page links
 
 ---
 
@@ -159,22 +162,23 @@ Phase 7 (Polish)
 
 ### Tasks
 
-- [ ] T019 [P] [US4] Add skip link to src/core/templates/base.html with sr-only and focus styles
-- [ ] T020 [P] [US4] Add ARIA attributes to navigation.html (role="menubar", aria-label="Main navigation")
-- [ ] T021 [P] [US4] Add role="none" to menu list items and role="menuitem" to links in navigation.html
-- [ ] T022 [P] [US4] Add aria-current="page" attribute to current page menu item in navigation.html
-- [ ] T023 [P] [US4] Create mobile hamburger menu structure with DaisyUI drawer in navigation.html
-- [ ] T024 [P] [US4] Add drawer checkbox with id="nav-drawer" and corresponding labels in navigation.html
-- [ ] T025 [P] [US4] Add aria-expanded and aria-controls attributes to hamburger button in navigation.html
-- [ ] T026 [P] [US4] Style navigation with DaisyUI theme-aware classes (bg-base-100, text-base-content) in navigation.html
-- [ ] T027 [P] [US4] Add focus indicators with sufficient contrast (ring-2 ring-primary) to all interactive elements
-- [ ] T028 [US4] Test keyboard navigation (Tab through items, verify focus indicators visible)
-- [ ] T029 [US4] Test screen reader with NVDA or JAWS (verify menu announcements)
-- [ ] T030 [US4] Run axe DevTools accessibility scan and fix critical errors
-- [ ] T031 [US4] Test mobile hamburger menu on device <1024px (verify drawer opens/closes)
-- [ ] T032 [US4] Verify touch target sizes are minimum 44x44 pixels on mobile
-- [ ] T033 [US4] Test dark mode theme switching (verify contrast ratios)
-- [ ] T034 [US4] Test with JavaScript disabled (basic links should still work)
+- [ ] T022 [P] [US4] Add skip link to src/core/templates/base.html with sr-only and focus styles
+- [ ] T023 [P] [US4] Add ARIA attributes to navigation.html (role="menubar", aria-label="Main navigation")
+- [ ] T024 [P] [US4] Add role="none" to menu list items and role="menuitem" to links in navigation.html
+- [ ] T025 [P] [US4] Add aria-current="page" attribute to current page menu item in navigation.html
+- [ ] T026 [P] [US4] Create AccessibilityTests class in src/navigation/tests.py for ARIA attribute validation
+- [ ] T027 [P] [US4] Create mobile hamburger menu structure with DaisyUI drawer in navigation.html
+- [ ] T028 [P] [US4] Add drawer checkbox with id="nav-drawer" and corresponding labels in navigation.html
+- [ ] T029 [P] [US4] Add aria-expanded and aria-controls attributes to hamburger button in navigation.html
+- [ ] T030 [P] [US4] Style navigation with DaisyUI theme-aware classes (bg-base-100, text-base-content) in navigation.html
+- [ ] T031 [P] [US4] Add focus indicators with sufficient contrast (ring-2 ring-primary) to all interactive elements
+- [ ] T032 [US4] Test keyboard navigation (Tab through items, verify focus indicators visible)
+- [ ] T033 [US4] Test screen reader with NVDA or JAWS (verify menu announcements)
+- [ ] T034 [US4] Run axe DevTools accessibility scan and fix critical errors
+- [ ] T035 [US4] Test mobile hamburger menu on device <1024px (verify drawer opens/closes)
+- [ ] T036 [US4] Verify touch target sizes are minimum 44x44 pixels on mobile
+- [ ] T037 [US4] Test dark mode theme switching (verify contrast ratios)
+- [ ] T038 [US4] Test with JavaScript disabled (basic links should still work)
 
 ---
 
@@ -194,23 +198,25 @@ Phase 7 (Polish)
 
 ### Tasks
 
-- [ ] T035 [P] [US2] Create MenuItemBlock StreamBlock in src/navigation/blocks.py allowing only page_link and external_link
-- [ ] T036 [P] [US2] Create DropdownMenuBlock StructBlock in src/navigation/blocks.py with title and items (MenuItemBlock)
-- [ ] T037 [US2] Add dropdown block type to TopLevelMenuBlock in src/navigation/blocks.py
-- [ ] T038 [US2] Create and run migration for dropdown menu block structure
-- [ ] T039 [US2] Update process_menu_item() in navigation_tags.py to handle dropdown type
-- [ ] T040 [US2] Add child item processing logic to dropdown handler with is_open calculation
-- [ ] T041 [P] [US2] Add desktop dropdown menu HTML with dropdown-hover class to navigation.html
-- [ ] T042 [P] [US2] Add ARIA attributes for dropdowns (aria-haspopup, aria-controls, aria-labelledby) to navigation.html
-- [ ] T043 [P] [US2] Add mobile accordion dropdown using <details>/<summary> in drawer section of navigation.html
-- [ ] T044 [P] [US2] Add chevron/arrow icons to indicate dropdown state in navigation.html
-- [ ] T045 [US2] Test dropdown creation in admin with 3+ child items
-- [ ] T046 [US2] Test desktop dropdown opens on hover (≥1024px viewport)
-- [ ] T047 [US2] Test desktop dropdown opens on click (accessibility)
-- [ ] T048 [US2] Test mobile accordion expansion in drawer (<1024px viewport)
-- [ ] T049 [US2] Test dropdown positioning near right edge (should open left)
-- [ ] T050 [US2] Test dropdown positioning near left edge (should open right)
-- [ ] T051 [US2] Test reordering menu items with up/down arrows in admin
+- [ ] T039 [P] [US2] Create MenuItemBlock StreamBlock in src/navigation/blocks.py allowing only page_link and external_link
+- [ ] T040 [P] [US2] Create DropdownMenuBlock StructBlock in src/navigation/blocks.py with title and items (MenuItemBlock)
+- [ ] T041 [US2] Add dropdown block type to TopLevelMenuBlock in src/navigation/blocks.py
+- [ ] T042 [US2] Create and run migration for dropdown menu block structure
+- [ ] T043 [US2] Update process_menu_item() in navigation_tags.py to handle dropdown type
+- [ ] T044 [US2] Add child item processing logic to dropdown handler with is_open calculation
+- [ ] T045 [P] [US2] Add desktop dropdown menu HTML with dropdown-hover class to navigation.html
+- [ ] T046 [P] [US2] Add ARIA attributes for dropdowns (aria-haspopup, aria-controls, aria-labelledby) to navigation.html
+- [ ] T047 [P] [US2] Add mobile accordion dropdown using <details>/<summary> in drawer section of navigation.html
+- [ ] T048 [P] [US2] Add chevron/arrow icons to indicate dropdown state in navigation.html
+- [ ] T049 [P] [US2] Implement JavaScript dropdown edge detection in navigation.html (check viewport bounds, adjust positioning left/right)
+- [ ] T050 [US2] Test dropdown creation in admin with 3+ child items
+- [ ] T051 [US2] Test desktop dropdown opens on hover (≥1024px viewport)
+- [ ] T052 [US2] Test desktop dropdown opens on click (accessibility)
+- [ ] T053 [US2] Test mobile accordion expansion in drawer (<1024px viewport)
+- [ ] T054 [US2] Test dropdown positioning near right edge (should open left)
+- [ ] T055 [US2] Test dropdown positioning near left edge (should open right)
+- [ ] T056 [US2] Test menu reordering using Wagtail StreamField built-in up/down arrow controls in admin
+- [ ] T057 [P] [US2] Add dropdown tests to StreamFieldTests class in src/navigation/tests.py
 
 ---
 
@@ -230,16 +236,17 @@ Phase 7 (Polish)
 
 ### Tasks
 
-- [ ] T052 [P] [US3] Add Locale.get_active() call to navigation_menu template tag in navigation_tags.py
-- [ ] T053 [P] [US3] Add Locale.get_default() fallback logic to navigation_menu template tag
-- [ ] T054 [US3] Update process_menu_item() to resolve page translations using page.localized.get(locale=current_locale)
-- [ ] T055 [US3] Add try/except fallback to default locale when page translation doesn't exist in process_menu_item()
-- [ ] T056 [US3] Filter out deleted/unpublished pages in all locales in process_menu_item()
-- [ ] T057 [US3] Update title resolution to use translated page title when no custom_title in process_menu_item()
-- [ ] T058 [US3] Test menu with mix of translated and untranslated pages (verify fallback)
-- [ ] T059 [US3] Test switching between locales (verify menu adapts automatically)
-- [ ] T060 [US3] Test custom title translations in multiple locales
-- [ ] T061 [US3] Test page translation addition/removal (verify menu updates)
+- [ ] T058 [P] [US3] Add Locale.get_active() call to navigation_menu template tag in navigation_tags.py
+- [ ] T059 [P] [US3] Add Locale.get_default() fallback logic to navigation_menu template tag
+- [ ] T060 [US3] Update process_menu_item() to resolve page translations using page.localized.get(locale=current_locale)
+- [ ] T061 [US3] Add try/except fallback to default locale when page translation doesn't exist in process_menu_item()
+- [ ] T062 [US3] Filter out deleted/unpublished pages in all locales in process_menu_item()
+- [ ] T063 [US3] Update title resolution to use translated page title when no custom_title in process_menu_item()
+- [ ] T064 [US3] Test menu with mix of translated and untranslated pages (verify fallback)
+- [ ] T065 [US3] Test switching between locales (verify menu adapts automatically)
+- [ ] T066 [US3] Test custom title translations in multiple locales
+- [ ] T067 [US3] Test page translation addition/removal (verify menu updates)
+- [ ] T068 [P] [US3] Create TranslationTests class in src/navigation/tests.py to test locale switching and fallback behavior
 
 ---
 
@@ -251,44 +258,44 @@ Phase 7 (Polish)
 
 ### Tasks
 
-- [ ] T062 [P] Create comprehensive test suite in src/navigation/tests.py with ModelTests class
-- [ ] T063 [P] Add StreamFieldTests class to test block structure and validation
-- [ ] T064 [P] Add AdminTests class to test menu creation and editing in admin
-- [ ] T065 [P] Add TranslationTests class to test locale switching and fallback
-- [ ] T066 [P] Add IntegrationTests class to test end-to-end menu rendering
-- [ ] T067 Run full test suite and achieve >90% code coverage
-- [ ] T068 [P] Add performance optimization comments to navigation_tags.py for caching strategy
-- [ ] T069 [P] Update .github/copilot-instructions.md with navigation patterns and examples
-- [ ] T070 [P] Add navigation section to project README.md with usage examples
-- [ ] T071 Run final WCAG 2.1 AA validation scan with axe DevTools
-- [ ] T072 Test menu with 50 items to verify <100ms rendering performance target
-- [ ] T073 Test all edge cases from spec (deleted pages, empty menu, invalid URLs)
-- [ ] T074 Create CHANGELOG entry documenting navigation menu feature
-- [ ] T075 Final code quality check (ruff, pre-commit hooks)
+- [ ] T069 [P] Add AdminTests class to src/navigation/tests.py to test menu creation and editing in admin interface
+- [ ] T070 Run full test suite and achieve >90% code coverage
+- [ ] T071 [P] Add performance optimization comments to navigation_tags.py for caching strategy
+- [ ] T072 [P] Update .github/copilot-instructions.md with navigation patterns and examples
+- [ ] T073 [P] Add navigation section to project README.md with usage examples
+- [ ] T074 Run final WCAG 2.1 AA validation scan with axe DevTools
+- [ ] T075 Test menu with 50 items to verify <100ms rendering performance target
+- [ ] T076 Test all edge cases from spec (deleted pages, empty menu, invalid URLs)
+- [ ] T077 Create CHANGELOG entry documenting navigation menu feature
+- [ ] T078 Final code quality check (ruff, pre-commit hooks)
 
 ---
 
 ## Task Summary
 
-**Total Tasks**: 75
-**MVP Tasks** (Phases 1-4): 34 tasks
-**Full Feature Tasks** (Phases 1-7): 75 tasks
+**Total Tasks**: 78
+**MVP Tasks** (Phases 1-4): 38 tasks
+**Full Feature Tasks** (Phases 1-7): 78 tasks
 
 **Task Distribution by User Story**:
 - Setup (Phase 1): 5 tasks
 - Foundational (Phase 2): 1 task
-- User Story 1 - Basic Menu (P1): 12 tasks
-- User Story 4 - Accessibility (P1): 16 tasks
-- User Story 2 - Dropdowns (P2): 17 tasks
-- User Story 3 - Multi-lingual (P3): 10 tasks
-- Polish & Cross-Cutting (Phase 7): 14 tasks
+- User Story 1 - Basic Menu (P1): 15 tasks (includes ModelTests, StreamFieldTests, IntegrationTests)
+- User Story 4 - Accessibility (P1): 17 tasks (includes AccessibilityTests)
+- User Story 2 - Dropdowns (P2): 19 tasks (includes edge detection implementation and tests)
+- User Story 3 - Multi-lingual (P3): 11 tasks (includes TranslationTests)
+- Polish & Cross-Cutting (Phase 7): 10 tasks
 
-**Parallel Opportunities**: 23 tasks marked [P] can execute in parallel
+**Parallel Opportunities**: 28 tasks marked [P] can execute in parallel
+
+**Test Coverage**: Tests integrated throughout phases (TDD approach) - ModelTests (T014), StreamFieldTests (T010, T057), AccessibilityTests (T026), TranslationTests (T068), IntegrationTests (T021), AdminTests (T069)
 
 **Estimated Timeline**:
-- MVP (Phases 1-4): 3-5 days
-- Full Feature (Phases 1-7): 7-10 days
+- MVP (Phases 1-4): 4-6 days (includes integrated testing)
+- Full Feature (Phases 1-7): 8-11 days
 - Per Sprint: ~2-3 days with single developer
+
+**TDD Compliance**: ✅ Tests now integrated within implementation phases per Constitution Principle IV
 
 ---
 
@@ -296,10 +303,11 @@ Phase 7 (Polish)
 
 Before marking the feature complete, verify:
 
-- [ ] All 75 tasks completed and checked off
+- [ ] All 78 tasks completed and checked off
 - [ ] All user stories (US1, US2, US3, US4) acceptance scenarios pass
 - [ ] WCAG 2.1 AA validation passes with zero critical errors
 - [ ] All tests pass with >90% coverage
+- [ ] Test classes implemented: ModelTests, StreamFieldTests, AccessibilityTests, TranslationTests, IntegrationTests, AdminTests
 - [ ] Performance target met (<100ms rendering for 50 items)
 - [ ] Documentation updated (README, AGENTS.md, CHANGELOG)
 - [ ] Code quality checks pass (ruff, pre-commit)
