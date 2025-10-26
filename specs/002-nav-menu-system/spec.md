@@ -11,7 +11,7 @@
 
 - Q: For mobile devices (< 1024px), what UX pattern should the hamburger menu use when opened? → A: DaisyUI drawer component that slides in from left side
 - Q: How should dropdown menus open on desktop devices? → A: Hover on desktop (≥1024px), click/tap on all devices
-- Q: How should nested dropdown menus behave inside the mobile hamburger drawer? → A: Accordion-style expansion within drawer (nested submenus expand in-place)
+- Q: How should dropdown menus behave inside the mobile hamburger drawer? → A: Accordion-style expansion within drawer (submenus expand in-place below parent item)
 - Q: When a page linked in a menu is deleted, how should the system handle that menu item? → A: Automatically remove from menu immediately when page is deleted (or prevent deletion to preserve referential integrity)
 - Q: When the navigation menu has no menu items configured, how should it render on the front-end? → A: Hide `<nav>` element entirely (do not render navigation section at all)
 
@@ -42,28 +42,27 @@ As a site administrator, I need to create a simple navigation menu with top-leve
 
 ---
 
-### User Story 2 - Organize Nested Menu Structure (Priority: P2)
+### User Story 2 - Organize Menu with Dropdowns (Priority: P2)
 
-As a site administrator, I need to create nested menu structures with submenus so that I can organize related pages hierarchically and reduce visual clutter.
+As a site administrator, I need to create dropdown menus to group related pages so that I can organize content logically and reduce visual clutter.
 
-**Why this priority**: Nested menus are essential for sites with many pages, but they build upon the basic menu functionality. This can be developed after the core menu system works.
+**Why this priority**: Dropdown menus are essential for sites with many pages, but they build upon the basic menu functionality. This can be developed after the core menu system works.
 
-**Independent Test**: Can be fully tested by creating a menu with at least one top-level item that has 3+ child items, verifying the submenu opens on hover/click, and confirming child items navigate correctly.
+**Independent Test**: Can be fully tested by creating a menu with at least one dropdown containing 3+ child items, verifying the submenu opens on hover/click, and confirming child items navigate correctly.
 
 **Acceptance Scenarios**:
 
 1. **Given** I am editing a menu, **When** I add a dropdown menu item, **Then** I can add page links and external links within that dropdown
 2. **Given** I am creating a dropdown menu, **When** I set the dropdown title, **Then** I can provide translations for that title in all enabled locales
-3. **Given** I have created a nested menu structure, **When** I save the menu, **Then** the hierarchy is preserved on the front-end
+3. **Given** I have created a menu with dropdowns, **When** I save the menu, **Then** the structure is preserved on the front-end
 4. **Given** a visitor views a menu with dropdown items, **When** they hover over or click a dropdown menu item, **Then** the submenu expands to show child items
 5. **Given** a visitor views a dropdown menu in a specific locale, **When** the dropdown has a title translation for that locale, **Then** the translated title displays
 6. **Given** a dropdown menu item exists, **When** a visitor clicks the dropdown menu title itself, **Then** it only opens the submenu without navigating (the dropdown title is not clickable as a link)
 7. **Given** I want to reorder menu items, **When** I use the up/down arrow controls in the admin interface, **Then** the menu items move to the new position
 8. **Given** I have reordered menu items, **When** I save the menu, **Then** the new order is preserved on the front-end
-9. **Given** I try to add a dropdown menu inside another dropdown menu, **When** I attempt to save, **Then** the system prevents this and shows a validation error (maximum 2 levels enforced)
-10. **Given** a dropdown menu is positioned near the right edge of the screen, **When** a visitor opens it, **Then** the submenu opens to the left to prevent horizontal overflow
-11. **Given** a dropdown menu is positioned near the left edge of the screen, **When** a visitor opens it, **Then** the submenu opens to the right to remain visible
-12. **Given** a dropdown menu has sufficient space in all directions, **When** a visitor opens it, **Then** the submenu opens downward by default
+9. **Given** a dropdown menu is positioned near the right edge of the screen, **When** a visitor opens it, **Then** the submenu opens to the left to prevent horizontal overflow
+10. **Given** a dropdown menu is positioned near the left edge of the screen, **When** a visitor opens it, **Then** the submenu opens to the right to remain visible
+11. **Given** a dropdown menu has sufficient space in all directions, **When** a visitor opens it, **Then** the submenu opens downward by default
 
 ---
 
@@ -134,7 +133,6 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - What happens when no custom title is provided? (Use the page's own translated title, falling back to default locale title if page not translated)
 - How are custom title translations stored? (As optional locale-text pairs within each menu item - only needed when overriding page titles)
 - What about additional menus (footer, sidebar)? (Out of scope for this feature - this implements the primary navigation menu only; additional menus can be added as separate settings in future features)
-- What happens if an administrator tries to create a 3-level nested menu? (System must prevent this in the admin interface - dropdown blocks cannot contain other dropdown blocks, only simple link blocks)
 - What if a dropdown menu would extend beyond the viewport? (Frontend implements edge detection: menus near right edge open left, menus near left edge open right, default opens down)
 - How does edge detection work on mobile devices? (Same logic applies but with smaller viewport - menus adapt to available space using responsive positioning)
 - What happens when the viewport is resized while a menu is open? (Menu position should recalculate and adjust if needed, or close and require reopening)
@@ -161,12 +159,11 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - **FR-006**: System MUST display the page's translated title when no custom title is provided and a page translation exists
 - **FR-007**: System MUST display the custom title (or its translation if available) when a custom title is provided
 - **FR-008**: System MUST support both internal page links and external URL links as menu items
-- **FR-009**: System MUST support dropdown menu items that contain multiple child links (pages or external URLs)
+- **FR-009**: System MUST support dropdown menu items that contain multiple child links (pages or external URLs only - no nested dropdowns)
 - **FR-010**: System MUST allow administrators to optionally provide translations for external link titles and dropdown menu titles
 - **FR-011**: System MUST allow administrators to reorder menu items using up/down arrow controls
 - **FR-012**: System MUST support optional anchor links (fragment identifiers) for both internal pages and external URLs
-- **FR-013**: System MUST limit menu nesting to exactly 2 levels: top-level items can be simple links OR dropdown menus; dropdown menus can ONLY contain simple links (no nested dropdowns)
-- **FR-013a**: System MUST prevent administrators from adding dropdown menus within dropdown menus (enforce 2-level maximum in admin interface)
+- **FR-013**: System MUST limit menu structure to 2 levels: top-level items can be simple links OR dropdown menus; dropdown menus contain ONLY simple links
 - **FR-014**: Dropdown menu items MUST NOT navigate when clicked - they MUST only expand/collapse the submenu
 - **FR-015**: Simple link menu items (both top-level and within dropdowns) MUST navigate to their target when clicked
 - **FR-016**: System MUST store menu structure in the default locale as the canonical source
@@ -265,4 +262,3 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - **SC-017**: Navigation remains functional with JavaScript disabled (dropdowns work via `<details>` element)
 - **SC-018**: Users can activate skip link to bypass navigation and jump directly to main content using keyboard
 - **SC-019**: Dropdown menus automatically position themselves to avoid viewport overflow (tested at viewport widths of 320px, 768px, 1024px, and 1920px)
-- **SC-020**: Administrator receives clear validation error when attempting to nest dropdowns within dropdowns (3+ level prevention)
