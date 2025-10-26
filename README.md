@@ -47,17 +47,20 @@ QuakerCMS is designed to handle the specific types of content that Quaker commun
 ## Use Cases
 
 ### Individual Meetings
+
 - Publish weekly announcements and newsletters
 - Share minutes from business meetings
 - Maintain event calendars
 - Create digital archives of important documents
 
 ### Regional Bodies
+
 - Aggregate epistles and minutes from constituent meetings
 - Coordinate regional events and communications
 - Maintain directories of meetings and worship groups
 
 ### Broader Quaker Community
+
 - Discover spiritual writings and epistles from meetings worldwide
 - Research historical documents and decisions
 - Stay connected with the global Quaker movement
@@ -65,15 +68,18 @@ QuakerCMS is designed to handle the specific types of content that Quaker commun
 ## Stakeholders
 
 ### Primary Users
+
 - **Meeting Clerks** - Responsible for publishing official meeting communications
 - **Content Managers** - Members designated to maintain website content
 - **Newsletter Editors** - Those who compile and publish regular communications
 
 ### Administrative Roles
+
 - **Technical Coordinators** - Manage site infrastructure and custom domains
 - **Site Administrators** - Configure initial site settings and user permissions
 
 ### Community Members
+
 - **Meeting Attenders** - Access community content and internal resources
 - **Researchers** - Scholars and historians studying _about_ Quaker writings and decisions
 - **Other Meetings** - Discover and learn from content published by peer communities
@@ -85,6 +91,7 @@ For information on setting up a development environment or contributing to the p
 ## Technology Stack
 
 QuakerCMS is built with:
+
 - **Python 3.12+** - Modern Python for reliable backend development
 - **Django** - Robust web framework for rapid development
 - **Wagtail CMS** - Flexible content management system with excellent editing experience
