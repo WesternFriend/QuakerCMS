@@ -45,7 +45,7 @@ class ContentPage(Page):
     body = StreamField(
         [
             ("heading", HeadingBlock()),
-            ("paragraph", blocks.RichTextBlock()),
+            ("rich_text", blocks.RichTextBlock()),
             ("image", ImageChooserBlock()),
             ("quote", blocks.BlockQuoteBlock()),
             ("embed", EmbedBlock()),

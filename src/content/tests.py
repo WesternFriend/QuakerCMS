@@ -192,21 +192,21 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
         # Should default to h2
         self.assertEqual(content_page.body[0].value["level"], "h2")
 
-    def test_can_add_paragraph_block(self):
-        """Test adding a paragraph block to body."""
+    def test_can_add_rich_text_block(self):
+        """Test adding a rich text block to body."""
         content_page = ContentPage(
-            title="Paragraph Test",
-            slug="paragraph-test",
+            title="Rich Text Test",
+            slug="rich-text-test",
             locale=self.locale_en,
             body=[
-                {"type": "paragraph", "value": "<p>My paragraph text</p>"},
+                {"type": "rich_text", "value": "<p>My paragraph text</p>"},
             ],
         )
         self.home.add_child(instance=content_page)
 
-        # Verify paragraph block
+        # Verify rich text block
         self.assertEqual(len(content_page.body), 1)
-        self.assertEqual(content_page.body[0].block_type, "paragraph")
+        self.assertEqual(content_page.body[0].block_type, "rich_text")
 
     def test_can_add_quote_block(self):
         """Test adding a quote block to body."""
@@ -248,9 +248,9 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
             locale=self.locale_en,
             body=[
                 {"type": "heading", "value": {"text": "Introduction", "level": "h2"}},
-                {"type": "paragraph", "value": "<p>First paragraph</p>"},
+                {"type": "rich_text", "value": "<p>First paragraph</p>"},
                 {"type": "quote", "value": "A wise saying"},
-                {"type": "paragraph", "value": "<p>Second paragraph</p>"},
+                {"type": "rich_text", "value": "<p>Second paragraph</p>"},
             ],
         )
         self.home.add_child(instance=content_page)
@@ -258,9 +258,9 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
         # Verify all blocks
         self.assertEqual(len(content_page.body), 4)
         self.assertEqual(content_page.body[0].block_type, "heading")
-        self.assertEqual(content_page.body[1].block_type, "paragraph")
+        self.assertEqual(content_page.body[1].block_type, "rich_text")
         self.assertEqual(content_page.body[2].block_type, "quote")
-        self.assertEqual(content_page.body[3].block_type, "paragraph")
+        self.assertEqual(content_page.body[3].block_type, "rich_text")
 
     def test_streamfield_uses_json_field(self):
         """Test that StreamField uses JSONField for storage."""
@@ -315,7 +315,7 @@ class ContentPageTranslationTests(WagtailPageTestCase):
             locale=self.locale_en,
             body=[
                 {"type": "heading", "value": {"text": "Hello", "level": "h2"}},
-                {"type": "paragraph", "value": "<p>Welcome to our site</p>"},
+                {"type": "rich_text", "value": "<p>Welcome to our site</p>"},
             ],
         )
         self.home_en.add_child(instance=page_en)
@@ -325,7 +325,7 @@ class ContentPageTranslationTests(WagtailPageTestCase):
         page_fi.title = "Finnish Content"
         page_fi.body = [
             {"type": "heading", "value": {"text": "Terve", "level": "h2"}},
-            {"type": "paragraph", "value": "<p>Tervetuloa sivuillemme</p>"},
+            {"type": "rich_text", "value": "<p>Tervetuloa sivuillemme</p>"},
         ]
         page_fi.save()
 
@@ -364,7 +364,7 @@ class ContentPageTranslationTests(WagtailPageTestCase):
             slug="independent-content",
             locale=self.locale_en,
             body=[
-                {"type": "paragraph", "value": "<p>English text</p>"},
+                {"type": "rich_text", "value": "<p>English text</p>"},
             ],
         )
         self.home_en.add_child(instance=page_en)
@@ -373,7 +373,7 @@ class ContentPageTranslationTests(WagtailPageTestCase):
         page_fi = page_en.copy_for_translation(self.locale_fi)
         page_fi.title = "Suomi"
         page_fi.body = [
-            {"type": "paragraph", "value": "<p>Suomeksi teksti</p>"},
+            {"type": "rich_text", "value": "<p>Suomeksi teksti</p>"},
         ]
         page_fi.save()
 
