@@ -146,7 +146,7 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
             slug="heading-test",
             locale=self.locale_en,
             body=[
-                {"type": "heading", "value": "My Heading"},
+                {"type": "heading", "value": {"text": "My Heading", "level": "h2"}},
             ],
         )
         self.home.add_child(instance=content_page)
@@ -154,7 +154,43 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
         # Verify heading block
         self.assertEqual(len(content_page.body), 1)
         self.assertEqual(content_page.body[0].block_type, "heading")
-        self.assertEqual(content_page.body[0].value, "My Heading")
+        self.assertEqual(content_page.body[0].value["text"], "My Heading")
+        self.assertEqual(content_page.body[0].value["level"], "h2")
+
+    def test_heading_block_supports_multiple_levels(self):
+        """Test that heading block supports h2, h3, and h4 levels."""
+        content_page = ContentPage(
+            title="Heading Levels Test",
+            slug="heading-levels-test",
+            locale=self.locale_en,
+            body=[
+                {"type": "heading", "value": {"text": "Main Section", "level": "h2"}},
+                {"type": "heading", "value": {"text": "Subsection", "level": "h3"}},
+                {"type": "heading", "value": {"text": "Sub-subsection", "level": "h4"}},
+            ],
+        )
+        self.home.add_child(instance=content_page)
+
+        # Verify all heading levels
+        self.assertEqual(len(content_page.body), 3)
+        self.assertEqual(content_page.body[0].value["level"], "h2")
+        self.assertEqual(content_page.body[1].value["level"], "h3")
+        self.assertEqual(content_page.body[2].value["level"], "h4")
+
+    def test_heading_block_defaults_to_h2(self):
+        """Test that heading block defaults to h2 when level not specified."""
+        content_page = ContentPage(
+            title="Default Heading Test",
+            slug="default-heading-test",
+            locale=self.locale_en,
+            body=[
+                {"type": "heading", "value": {"text": "Default Level"}},
+            ],
+        )
+        self.home.add_child(instance=content_page)
+
+        # Should default to h2
+        self.assertEqual(content_page.body[0].value["level"], "h2")
 
     def test_can_add_paragraph_block(self):
         """Test adding a paragraph block to body."""
@@ -211,7 +247,7 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
             slug="multiple-blocks-test",
             locale=self.locale_en,
             body=[
-                {"type": "heading", "value": "Introduction"},
+                {"type": "heading", "value": {"text": "Introduction", "level": "h2"}},
                 {"type": "paragraph", "value": "<p>First paragraph</p>"},
                 {"type": "quote", "value": "A wise saying"},
                 {"type": "paragraph", "value": "<p>Second paragraph</p>"},
@@ -234,7 +270,7 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
             slug="json-test",
             locale=self.locale_en,
             body=[
-                {"type": "heading", "value": "Test"},
+                {"type": "heading", "value": {"text": "Test", "level": "h2"}},
             ],
         )
         self.home.add_child(instance=content_page)
@@ -244,7 +280,7 @@ class ContentPageStreamFieldTests(WagtailPageTestCase):
 
         # Should still have the block
         self.assertEqual(len(content_page.body), 1)
-        self.assertEqual(content_page.body[0].value, "Test")
+        self.assertEqual(content_page.body[0].value["text"], "Test")
 
 
 class ContentPageTranslationTests(WagtailPageTestCase):
@@ -278,7 +314,7 @@ class ContentPageTranslationTests(WagtailPageTestCase):
             slug="english-content",
             locale=self.locale_en,
             body=[
-                {"type": "heading", "value": "Hello"},
+                {"type": "heading", "value": {"text": "Hello", "level": "h2"}},
                 {"type": "paragraph", "value": "<p>Welcome to our site</p>"},
             ],
         )
@@ -288,7 +324,7 @@ class ContentPageTranslationTests(WagtailPageTestCase):
         page_fi = page_en.copy_for_translation(self.locale_fi)
         page_fi.title = "Finnish Content"
         page_fi.body = [
-            {"type": "heading", "value": "Terve"},
+            {"type": "heading", "value": {"text": "Terve", "level": "h2"}},
             {"type": "paragraph", "value": "<p>Tervetuloa sivuillemme</p>"},
         ]
         page_fi.save()
@@ -395,7 +431,7 @@ class ContentPageTemplateTests(TestCase):
             slug="context-test",
             locale=self.locale_en,
             body=[
-                {"type": "heading", "value": "Test Heading"},
+                {"type": "heading", "value": {"text": "Test Heading", "level": "h3"}},
             ],
         )
         self.home.add_child(instance=content_page)

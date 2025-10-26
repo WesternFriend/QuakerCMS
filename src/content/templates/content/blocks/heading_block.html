@@ -1,0 +1,10 @@
+{% load wagtailcore_tags %}
+
+{# Render heading with the user-selected semantic level #}
+{% if value.level == 'h2' %}
+    <h2>{{ value.text }}</h2>
+{% elif value.level == 'h3' %}
+    <h3>{{ value.text }}</h3>
+{% elif value.level == 'h4' %}
+    <h4>{{ value.text }}</h4>
+{% endif %}
