@@ -8,6 +8,8 @@
 
 A specialized content management system designed for Quaker meetings and worship groups to publish and share their spiritual writings, announcements, and community content.
 
+**Built for the global Quaker community** with translation and localization as first-class features, supporting the international and multilingual nature of Friends worldwide.
+
 ## Purpose
 
 QuakerCMS provides a standardized platform for Quaker communities to publish and discover important content, fostering connection and continuity within the broader Quaker movement. The system recognizes the unique content types and communication patterns that are central to Quaker spiritual life and community organization.
@@ -36,9 +38,9 @@ QuakerCMS is designed to handle the specific types of content that Quaker commun
 
 ### Technical Goals
 
+- **Internationalization First** - Built-in support for 19+ languages with runtime-configurable localization, enabling Quaker communities worldwide to publish content in their native languages
 - **Multi-tenant Architecture** - Single instance can host multiple meetings and worship groups
 - **Content Federation** - Meetings can share content with other instances for broader discovery
-- **Multi-lingual Support** - Internationalization and localization capabilities for global Quaker communities
 - **Standards-Based** - Uses open web standards for content syndication (RSS, Atom)
 - **Mobile-Friendly** - Responsive design that works on all devices
 - **Open Source** - No dependency on proprietary services or software
