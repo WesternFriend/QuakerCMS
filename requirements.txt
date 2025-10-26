@@ -43,7 +43,7 @@ django-taggit==6.1.0
     # via wagtail
 django-tailwind==4.2.0
     # via quakercms (pyproject.toml)
-django-tasks==0.8.1
+django-tasks==0.9.0
     # via wagtail
 django-treebeard==4.7.1
     # via wagtail
