@@ -103,7 +103,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-.vscode/
+# VSCode - ignore user-specific files but allow settings.json
+.vscode/*
+!.vscode/settings.json
 
 # MacOS
 .DS_Store
