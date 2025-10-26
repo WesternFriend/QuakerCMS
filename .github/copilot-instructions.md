@@ -15,7 +15,23 @@ tests/
 
 ## Commands
 
-cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] pytest [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] ruff check .
+```bash
+# Navigate to source directory
+cd src
+
+# Run tests
+pytest
+
+# Run linter
+ruff check .
+
+# Start development server
+python manage.py runserver
+
+# Build Tailwind CSS (run in theme/static_src directory)
+cd theme/static_src
+npm run dev
+```
 
 ## Code Style
 
