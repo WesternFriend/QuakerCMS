@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+from core.constants import DEFAULT_LANGUAGE_CODE, LANGUAGE_CHOICES
+
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
@@ -26,8 +28,12 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 INSTALLED_APPS = [
     "home",
     "search",
+    "locales",
+    "content",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.settings",
+    "wagtail.contrib.simple_translation",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -36,6 +42,7 @@ INSTALLED_APPS = [
     "wagtail.images",
     "wagtail.search",
     "wagtail.admin",
+    "wagtail.locales",
     "wagtail",
     "modelcluster",
     "taggit",
@@ -51,6 +58,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -74,6 +82,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "wagtail.contrib.settings.context_processors.settings",
             ],
         },
     },
@@ -115,13 +124,28 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+# These will be overridden by LocaleSettings if available
+# The actual values are loaded dynamically from the database via LocaleSettings
+LANGUAGE_CODE = DEFAULT_LANGUAGE_CODE
 
 TIME_ZONE = "UTC"
 
 USE_I18N = True
 
 USE_TZ = True
+
+# Wagtail internationalization
+WAGTAIL_I18N_ENABLED = True
+
+# Available languages for Django
+# We set this to ALL possible languages from LANGUAGE_CHOICES.
+# Wagtail will only show/use locales that exist in the Locale model,
+# which are managed through the LocaleSettings admin interface.
+LANGUAGES = LANGUAGE_CHOICES
+
+# Wagtail content languages - same as LANGUAGES
+# The actual available locales are determined by what exists in the Locale model
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
 
 
 # Static files (CSS, JavaScript, Images)
