@@ -1,2 +1,3 @@
 [tools]
+# Node is used by tools like Tailwind
 node = "22" # LTS for stability
