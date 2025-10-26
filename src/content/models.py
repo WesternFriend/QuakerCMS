@@ -1,5 +1,6 @@
 from wagtail import blocks
 from wagtail.admin.panels import FieldPanel
+from wagtail.embeds.blocks import EmbedBlock
 from wagtail.fields import StreamField
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.models import Page
@@ -16,7 +17,7 @@ class ContentPage(Page):
             ("paragraph", blocks.RichTextBlock()),
             ("image", ImageChooserBlock()),
             ("quote", blocks.BlockQuoteBlock()),
-            ("embed", blocks.RawHTMLBlock()),
+            ("embed", EmbedBlock()),
         ],
         blank=True,
         use_json_field=True,
