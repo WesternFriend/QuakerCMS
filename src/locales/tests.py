@@ -324,7 +324,7 @@ class LanguageChoicesIntegrityTests(TestCase):
     def test_scandinavian_languages_present(self):
         """Test that Scandinavian languages are present."""
         codes = [code for code, name in LANGUAGE_CHOICES]
-        scandinavian_languages = ["da", "sv", "no", "fi", "is"]
+        scandinavian_languages = ["da", "sv", "nb", "fi", "is"]
         for lang in scandinavian_languages:
             self.assertIn(
                 lang,

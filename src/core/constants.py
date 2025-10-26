@@ -34,7 +34,7 @@ LANGUAGE_CHOICES = [
     ("nl", "Dutch / Nederlands"),
     ("da", "Danish / Dansk"),
     ("sv", "Swedish / Svenska"),
-    ("no", "Norwegian / Norsk"),
+    ("nb", "Norwegian Bokmål / Norsk bokmål"),
     ("fi", "Finnish / Suomi"),
     ("is", "Icelandic / Íslenska"),
     ("ru", "Russian / Русский"),
