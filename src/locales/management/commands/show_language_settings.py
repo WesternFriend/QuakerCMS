@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from wagtail.models import Site
 
+from core.constants import DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
 from locales.models import LocaleSettings
 
 
@@ -17,8 +18,8 @@ class Command(BaseCommand):
 
         # Show default fallbacks
         self.stdout.write("Default Fallbacks:")
-        self.stdout.write(f"  DEFAULT_LANGUAGE_CODE: {settings.DEFAULT_LANGUAGE_CODE}")
-        self.stdout.write(f"  DEFAULT_LANGUAGES: {settings.DEFAULT_LANGUAGES}\n")
+        self.stdout.write(f"  DEFAULT_LANGUAGE_CODE: {DEFAULT_LANGUAGE_CODE}")
+        self.stdout.write(f"  DEFAULT_LANGUAGES: {DEFAULT_LANGUAGES}\n")
 
         # Show current settings
         self.stdout.write("Current Django Settings:")
