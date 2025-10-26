@@ -55,7 +55,7 @@ et-xmlfile==2.0.0
     # via openpyxl
 filetype==1.2.0
     # via willow
-idna==3.10
+idna==3.11
     # via requests
 laces==0.1.2
     # via wagtail
