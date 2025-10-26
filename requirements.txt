@@ -3,7 +3,9 @@
 anyascii==0.3.3
     # via wagtail
 asgiref==3.10.0
-    # via django
+    # via
+    #   django
+    #   django-browser-reload
 beautifulsoup4==4.14.2
     # via wagtail
 certifi==2025.10.5
@@ -15,16 +17,20 @@ defusedxml==0.7.1
 django==5.2.7
     # via
     #   quakercms (pyproject.toml)
+    #   django-browser-reload
     #   django-filter
     #   django-modelcluster
     #   django-permissionedforms
     #   django-stubs-ext
     #   django-taggit
+    #   django-tailwind
     #   django-tasks
     #   django-treebeard
     #   djangorestframework
     #   laces
     #   wagtail
+django-browser-reload==1.21.0
+    # via django-tailwind
 django-filter==25.2
     # via wagtail
 django-modelcluster==6.4
@@ -35,6 +41,8 @@ django-stubs-ext==5.2.7
     # via django-tasks
 django-taggit==6.1.0
     # via wagtail
+django-tailwind==4.2.0
+    # via quakercms (pyproject.toml)
 django-tasks==0.8.1
     # via wagtail
 django-treebeard==4.7.1

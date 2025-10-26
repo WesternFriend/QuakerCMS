@@ -531,3 +531,141 @@ class ContentPageIntegrationTests(WagtailPageTestCase):
         self.assertEqual(level1.depth, self.home.depth + 1)
         self.assertEqual(level2.depth, level1.depth + 1)
         self.assertEqual(level3.depth, level2.depth + 1)
+
+
+class TailwindIntegrationTests(TestCase):
+    """Test Tailwind CSS integration for ContentPage."""
+
+    def test_base_template_includes_tailwind_tags(self):
+        """Test that base template includes Tailwind template tags."""
+        from django.template.loader import get_template
+
+        template = get_template("base.html")
+        source = template.template.source
+
+        # Should load tailwind_tags (may be on same line as other loads)
+        self.assertIn("tailwind_tags", source)
+        # Should include tailwind_css tag
+        self.assertIn("{% tailwind_css %}", source)
+        # Should include tailwind_preload_css tag
+        self.assertIn("{% tailwind_preload_css %}", source)
+
+    def test_content_page_template_includes_prose_classes(self):
+        """Test that ContentPage template includes prose classes."""
+        from django.template.loader import get_template
+
+        template = get_template("content/content_page.html")
+        source = template.template.source
+
+        # Should include prose classes for typography
+        self.assertIn("prose", source)
+        self.assertIn("lg:prose-xl", source)
+        self.assertIn("dark:prose-invert", source)
+
+    def test_home_page_template_includes_prose_classes(self):
+        """Test that HomePage template includes prose classes."""
+        from django.template.loader import get_template
+
+        template = get_template("home/home_page.html")
+        source = template.template.source
+
+        # Should include prose classes for typography
+        self.assertIn("prose", source)
+        self.assertIn("lg:prose-xl", source)
+        self.assertIn("dark:prose-invert", source)
+
+
+class DaisyUIComponentTests(WagtailPageTestCase):
+    """Test DaisyUI component integration."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.locale_en, _ = Locale.objects.get_or_create(language_code="en")
+        self.root = Page.get_first_root_node()
+        self.home = HomePage(
+            title="DaisyUI Test Home",
+            slug="daisyui-test-home",
+            locale=self.locale_en,
+        )
+        self.root.add_child(instance=self.home)
+
+        # Create site
+        Site.objects.create(
+            hostname="daisyui-test.localhost",
+            root_page=self.home,
+            is_default_site=True,
+            site_name="DaisyUI Test Site",
+        )
+
+    def test_daisyui_button_component_rendering(self):
+        """Test that DaisyUI button components render with correct classes."""
+        from django.template import Context, Template
+
+        template = Template('<button class="btn btn-primary">Click me</button>')
+        rendered = template.render(Context({}))
+
+        # Should contain DaisyUI button classes
+        self.assertIn("btn", rendered)
+        self.assertIn("btn-primary", rendered)
+
+    def test_daisyui_card_component_rendering(self):
+        """Test that DaisyUI card components render with correct classes."""
+        from django.template import Context, Template
+
+        template = Template(
+            '<div class="card bg-base-100 shadow-xl"><div class="card-body">'
+            '<h2 class="card-title">Card Title</h2></div></div>',
+        )
+        rendered = template.render(Context({}))
+
+        # Should contain DaisyUI card classes
+        self.assertIn("card", rendered)
+        self.assertIn("card-body", rendered)
+        self.assertIn("card-title", rendered)
+
+
+class DarkModeTests(WagtailPageTestCase):
+    """Test dark mode support."""
+
+    def test_content_page_template_includes_dark_mode_class(self):
+        """Test that ContentPage template includes dark:prose-invert class."""
+        from django.template.loader import get_template
+
+        template = get_template("content/content_page.html")
+        source = template.template.source
+
+        # Should include dark:prose-invert class
+        self.assertIn("dark:prose-invert", source)
+
+    def test_home_page_template_includes_dark_mode_class(self):
+        """Test that HomePage template includes dark:prose-invert class."""
+        from django.template.loader import get_template
+
+        template = get_template("home/home_page.html")
+        source = template.template.source
+
+        # Should include dark:prose-invert class
+        self.assertIn("dark:prose-invert", source)
+
+    def test_daisyui_dark_theme_configuration(self):
+        """Test that DaisyUI dark theme is configured in styles.css."""
+        import os
+
+        from django.conf import settings
+
+        # Corrected path - settings.BASE_DIR is already the project root
+        styles_css_path = os.path.join(
+            settings.BASE_DIR,
+            "theme",
+            "static_src",
+            "src",
+            "styles.css",
+        )
+
+        # Read the styles.css file
+        with open(styles_css_path) as f:
+            content = f.read()
+
+        # Should contain dark theme configuration
+        self.assertIn("dark", content)
+        self.assertIn("themes:", content)

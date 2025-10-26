@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "modelcluster",
     "taggit",
     "django_filters",
+    "tailwind",
+    "theme",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -218,3 +220,6 @@ WAGTAILDOCS_EXTENSIONS = [
     "xlsx",
     "zip",
 ]
+
+# Tailwind CSS
+TAILWIND_APP_NAME = "theme"
