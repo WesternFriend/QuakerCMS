@@ -737,9 +737,6 @@ class SyncLocalesCommandTests(TestCase):
         # Finnish should still exist
         self.assertTrue(Locale.objects.filter(language_code="fi").exists())
 
-        # Finnish should still exist
-        self.assertTrue(Locale.objects.filter(language_code="fi").exists())
-
     def test_command_removes_unused_locales(self):
         """Test that command removes locales without content when --remove-unused is used."""
         from io import StringIO
