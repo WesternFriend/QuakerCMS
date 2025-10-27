@@ -82,7 +82,7 @@ typing-extensions==4.15.0
     #   django-tasks
 urllib3==2.5.0
     # via requests
-wagtail==7.1.1
+wagtail==7.1.2
     # via quakercms (pyproject.toml)
 willow==1.11.0
     # via wagtail
