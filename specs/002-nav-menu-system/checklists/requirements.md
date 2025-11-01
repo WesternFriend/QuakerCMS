@@ -119,31 +119,6 @@ All checklist items have been validated. The specification has been **enhanced**
    - **Mobile edge detection** (small viewport adaptation)
    - **Viewport resize handling** (recalculate position or close menu)
 
-**Original Simplified Multi-lingual Architecture (RETAINED)**:
-
-**Simplified Multi-lingual Architecture**:
-
-- **FR-003**: Default behavior - use page's own title (already translated via Wagtail)
-- **FR-004**: **Optional** custom title field for menu items
-- **FR-005**: **Optional** translations for custom titles (only when custom title is provided)
-- **FR-006**: Auto-display page's translated title when no custom title
-- **FR-007**: Display custom title or its translation when provided
-- **FR-010**: External links and dropdown titles support optional translations
-
-**Why This Is Better**:
-
-- **90% of menu items**: Just use page titles (zero translation work)
-- **10% edge cases**: Custom titles with optional translations (minimal translation work)
-- **Example**: "About Us" page already has title in EN/ES/FR → menu automatically shows correct title
-- **Override**: If you want menu to say "Learn More" instead → add custom title + optional translations
-
-**Simplicity Improvements**:
-
-- **FR-001**: Single site-wide navigation menu via Settings (BaseSiteSetting pattern)
-- No "multiple menus" or "display locations" complexity
-
-**Original Simplified Multi-lingual Architecture (RETAINED)**:
-
 **Simplified Multi-lingual Architecture**:
 
 - **FR-003**: Default behavior - use page's own title (already translated via Wagtail)
