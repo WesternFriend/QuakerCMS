@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-10-26
 
 ## Active Technologies
+- Python 3.12+ + Django 5.2+, Wagtail 7.0+, DaisyUI (via django-tailwind) (002-nav-menu-system)
+- SQLite (dev) / PostgreSQL (production) - standard Django ORM (002-nav-menu-system)
 
 - Python 3.12+ + Django 5.2+, Wagtail 7.0+, django-tailwind (latest), Node.js/npm (for Tailwind compilation) (001-tailwind-integration)
 
@@ -38,6 +40,7 @@ npm run dev
 Python 3.12+: Follow standard conventions
 
 ## Recent Changes
+- 002-nav-menu-system: Added Python 3.12+ + Django 5.2+, Wagtail 7.0+, DaisyUI (via django-tailwind)
 
 - 001-tailwind-integration: Added Python 3.12+ + Django 5.2+, Wagtail 7.0+, django-tailwind (latest), Node.js/npm (for Tailwind compilation)
 
