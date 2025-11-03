@@ -1,16 +1,16 @@
-"""StreamField blocks for navigation menu system.
+"""Navigation menu blocks for QuakerCMS.
 
-Note: These blocks intentionally do NOT define Meta.template for self-rendering because:
-- Rendering depends on request context (current locale, current page)
-- Same block data renders differently for desktop vs mobile (different ARIA patterns)
-- Business logic (locale resolution, page filtering) happens in template tag
-- Desktop uses role="menubar" with <button> dropdowns, mobile uses role="menu" with <details>
-- This separation keeps data structure (blocks) decoupled from presentation (templates)
+This module defines the StreamField blocks used for building navigation menus.
+The blocks enforce a maximum 2-level nesting structure through their schema:
+- Top level can contain page links, external links, or dropdowns
+- Dropdown items can only contain page links or external links (no nested dropdowns)
 
-The navigation_tags.py template tag processes these blocks and transforms them into
-context-aware dictionaries before passing to navigation.html for rendering.
+Note: These blocks do not use Meta.template for rendering. Instead, rendering is
+handled by the navigation_menu template tag in navigation/templatetags/navigation_tags.py.
+This centralizes rendering logic and makes it easier to maintain desktop/mobile variations.
 """
 
+from django.core.exceptions import ValidationError
 from wagtail import blocks
 
 
@@ -82,9 +82,24 @@ class DropdownMenuBlock(blocks.StructBlock):
         help_text="Dropdown menu label",
     )
     items = MenuItemBlock(
-        required=True,
         help_text="Links to display in dropdown menu",
     )
+
+    def clean(self, value):
+        """Validate that dropdown contains at least one item."""
+        # Call parent clean first to get cleaned values
+        try:
+            cleaned = super().clean(value)
+        except blocks.StructBlockValidationError:
+            # If parent validation fails, provide our custom message
+            raise ValidationError("Dropdown menu must contain at least one item")
+
+        # Double-check if items list is empty
+        items = cleaned.get("items") if cleaned else []
+        if not items:
+            raise ValidationError("Dropdown menu must contain at least one item")
+
+        return cleaned
 
     class Meta:
         icon = "list-ul"

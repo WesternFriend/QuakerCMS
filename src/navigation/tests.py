@@ -157,6 +157,23 @@ class StreamFieldTests(TestCase):
         self.assertEqual(len(block.value["items"]), 1)
         self.assertEqual(block.value["items"][0].block_type, "page_link")
 
+    def test_dropdown_block_validates_non_empty_items(self):
+        """Dropdown menu block requires at least one item."""
+        from django.core.exceptions import ValidationError
+
+        from navigation.blocks import DropdownMenuBlock
+
+        block = DropdownMenuBlock()
+
+        # Empty items should raise validation error
+        with self.assertRaises(ValidationError) as context:
+            block.clean({"title": "Empty Dropdown", "items": []})
+
+        self.assertIn(
+            "Dropdown menu must contain at least one item",
+            str(context.exception),
+        )
+
 
 class IntegrationTests(WagtailTestUtils, TestCase):
     """Integration tests for end-to-end menu rendering."""
