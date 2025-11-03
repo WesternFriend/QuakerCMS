@@ -51,6 +51,13 @@ class HeadingBlock(blocks.StructBlock):
 
 **Security**: Use `EmbedBlock` (oEmbed) for embedded content, NEVER `RawHTMLBlock` (XSS risk).
 
+**Navigation Menu Pattern**: See `src/navigation/blocks.py` for nested block structure that enforces 2-level maximum:
+- `TopLevelMenuBlock` (StreamBlock) contains page_link, external_link, OR dropdown
+- `DropdownMenuBlock` (StructBlock) contains title and items (MenuItemBlock)
+- `MenuItemBlock` (StreamBlock) contains ONLY page_link and external_link (no nested dropdowns)
+
+This structural approach prevents 3+ level nesting at the schema level.
+
 ### 4. Translation & Locale Management
 
 - Translation UI comes from `wagtail.contrib.simple_translation` (already installed)

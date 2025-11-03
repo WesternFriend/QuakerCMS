@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Navigation Menu System**: Site-wide multi-lingual navigation with WCAG 2.1 AA accessibility
+  - Site-wide navigation menu configuration via Wagtail Settings (BaseSiteSetting pattern)
+  - StreamField-based menu structure with PageLinkBlock, ExternalLinkBlock, and DropdownMenuBlock
+  - **2-level menu maximum**: Enforced at schema level - prevents nested dropdowns
+  - **Locale-aware rendering**: Automatic page translation linking with fallback to default locale
+  - **Full WCAG 2.1 AA compliance**: ARIA menubar pattern, keyboard navigation, screen reader support
+  - **DaisyUI responsive design**: Mobile hamburger drawer, desktop horizontal menu
+  - **Accessibility features**:
+    - Skip link to main content (first focusable element)
+    - ARIA attributes (role, aria-label, aria-current, aria-expanded, aria-haspopup, aria-controls)
+    - 44x44px minimum touch targets for mobile
+    - Visible focus indicators (3:1 contrast ratio)
+    - Progressive enhancement with `<details>`/`<summary>` for dropdowns
+  - **Dropdown edge detection**: JavaScript prevents viewport overflow (opens left/right/down based on space)
+  - **Keyboard support**: Tab, Enter, Space, Escape, Arrow keys for full navigation
+  - **Theme-aware**: Automatic adaptation to light/dark mode via DaisyUI
+  - **7 comprehensive tests**: ModelTests, StreamFieldTests, IntegrationTests for dropdown structure
+  - Developer documentation in `specs/002-nav-menu-system/` (plan, data model, contracts, quickstart)
+  - Template tag: `{% load navigation_tags %}{% navigation_menu %}`
 - **Tailwind CSS Integration**: Modern utility-first CSS framework with DaisyUI components
   - Tailwind CSS v4 with @source directive for automatic template scanning
   - DaisyUI plugin with semantic component classes (buttons, cards, navigation, forms, alerts)

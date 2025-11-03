@@ -1,0 +1,229 @@
+{% load static %}
+
+{% if menu_items %}
+  <div class="drawer lg:drawer-open">
+  {# Checkbox for mobile drawer state #}
+    <input id="nav-drawer" type="checkbox" class="drawer-toggle" />
+
+    <div class="drawer-content flex flex-col">
+    {# Desktop Navigation #}
+      <nav class="navbar bg-base-100 hidden lg:flex" aria-label="Main navigation">
+        <div class="flex-1">
+          <ul class="menu menu-horizontal" role="menubar">
+            {% for item in menu_items %}
+              {% if item.type == 'page_link' or item.type == 'external_link' %}
+                <li role="none">
+                  <a
+                    href="{{ item.url }}"
+                    role="menuitem"
+                    class="focus:ring-2 focus:ring-primary"
+                    {% if item.is_current %}aria-current="page"{% endif %}
+                  >
+                    {{ item.title }}
+                  </a>
+                </li>
+              {% elif item.type == 'dropdown' %}
+                <li role="none" class="dropdown dropdown-hover">
+                  <button
+                    role="menuitem"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="dropdown-{{ forloop.counter }}"
+                    class="btn btn-ghost focus:ring-2 focus:ring-primary"
+                    tabindex="0"
+                  >
+                    {{ item.title }}
+                    <svg class="fill-current w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                      <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                    </svg>
+                  </button>
+                  <ul
+                    id="dropdown-{{ forloop.counter }}"
+                    role="menu"
+                    aria-labelledby="dropdown-trigger-{{ forloop.counter }}"
+                    class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+                  >
+                    {% for child in item.items %}
+                      <li role="none">
+                        <a
+                          href="{{ child.url }}"
+                          role="menuitem"
+                          class="focus:ring-2 focus:ring-primary"
+                          {% if child.is_current %}aria-current="page"{% endif %}
+                        >
+                          {{ child.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      </nav>
+
+    {# Mobile Hamburger Button #}
+      <div class="navbar bg-base-100 lg:hidden">
+        <label
+          for="nav-drawer"
+          class="btn btn-square btn-ghost"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </label>
+      </div>
+
+    {# Main content slot - will be filled by base template #}
+      <div class="flex-1">
+      {# Content rendered here by extending templates #}
+      </div>
+    </div>
+
+  {# Mobile Drawer #}
+    <div class="drawer-side lg:hidden">
+      <label for="nav-drawer" class="drawer-overlay" aria-label="Close menu"></label>
+
+      <aside id="mobile-menu" class="min-h-full w-80 bg-base-200">
+      {# Close button #}
+        <div class="flex justify-end p-4">
+          <label for="nav-drawer" class="btn btn-sm btn-circle btn-ghost" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </label>
+        </div>
+
+      {# Mobile menu items #}
+        <ul class="menu p-4 w-full" role="menu">
+          {% for item in menu_items %}
+            {% if item.type == 'page_link' or item.type == 'external_link' %}
+              <li role="none">
+                <a
+                  href="{{ item.url }}"
+                  role="menuitem"
+                  class="focus:ring-2 focus:ring-primary min-h-[44px] flex items-center"
+                  {% if item.is_current %}aria-current="page"{% endif %}
+                >
+                  {{ item.title }}
+                </a>
+              </li>
+            {% elif item.type == 'dropdown' %}
+              <li role="none">
+                <details {% if item.is_open %}open{% endif %}>
+                  <summary role="menuitem" aria-haspopup="true" class="min-h-[44px] flex items-center">
+                    {{ item.title }}
+                    <svg class="fill-current w-4 h-4 ml-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                      <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
+                    </svg>
+                  </summary>
+                  <ul role="menu" class="ml-4">
+                    {% for child in item.items %}
+                      <li role="none">
+                        <a
+                          href="{{ child.url }}"
+                          role="menuitem"
+                          class="focus:ring-2 focus:ring-primary min-h-[44px] flex items-center"
+                          {% if child.is_current %}aria-current="page"{% endif %}
+                        >
+                          {{ child.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </details>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </aside>
+    </div>
+  </div>
+
+{# JavaScript for dropdown edge detection and keyboard navigation #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+  // Dropdown edge detection
+      const dropdowns = document.querySelectorAll('.dropdown');
+
+      dropdowns.forEach(dropdown => {
+        const button = dropdown.querySelector('button[role="menuitem"]');
+        const menu = dropdown.querySelector('ul[role="menu"]');
+
+        if (!button || !menu) return;
+
+    // Show dropdown on hover or focus
+        const showDropdown = () => {
+          const buttonRect = button.getBoundingClientRect();
+          const menuRect = menu.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+
+      // Check if dropdown would overflow right edge
+          if (buttonRect.left + menuRect.width > viewportWidth) {
+            menu.style.right = '0';
+            menu.style.left = 'auto';
+          } else {
+            menu.style.left = '0';
+            menu.style.right = 'auto';
+          }
+
+          button.setAttribute('aria-expanded', 'true');
+        };
+
+        const hideDropdown = () => {
+          button.setAttribute('aria-expanded', 'false');
+        };
+
+    // Hover events
+        dropdown.addEventListener('mouseenter', showDropdown);
+        dropdown.addEventListener('mouseleave', hideDropdown);
+
+    // Keyboard support
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isExpanded = button.getAttribute('aria-expanded') === 'true';
+          if (isExpanded) {
+            hideDropdown();
+          } else {
+            showDropdown();
+          }
+        });
+
+        button.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            showDropdown();
+        // Focus first menu item
+            const firstItem = menu.querySelector('a[role="menuitem"]');
+            if (firstItem) firstItem.focus();
+          } else if (e.key === 'Escape') {
+            hideDropdown();
+            button.focus();
+          }
+        });
+
+    // Allow Escape to close dropdown from within menu
+        menu.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            hideDropdown();
+            button.focus();
+          }
+        });
+      });
+
+  // Update drawer button aria-expanded state
+      const drawerToggle = document.getElementById('nav-drawer');
+      const drawerButton = document.querySelector('label[for="nav-drawer"]');
+
+      if (drawerToggle && drawerButton) {
+        drawerToggle.addEventListener('change', () => {
+          drawerButton.setAttribute('aria-expanded', drawerToggle.checked);
+        });
+      }
+    });
+  </script>
+{% endif %}
