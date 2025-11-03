@@ -16,6 +16,17 @@ class ModelTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.site = Site.objects.get(is_default_site=True)
+        # Ensure a HomePage exists for tests
+        self.home = HomePage.objects.first()
+        if not self.home:
+            # Get the root page
+            root = Site.objects.get(is_default_site=True).root_page
+            self.home = HomePage(
+                title="Test Home Page",
+                slug="home",
+            )
+            root.add_child(instance=self.home)
+            self.home.save_revision().publish()
 
     def test_create_navigation_menu_setting(self):
         """Can create navigation menu setting."""
@@ -28,16 +39,13 @@ class ModelTests(TestCase):
 
     def test_navigation_menu_with_page_link(self):
         """Can create menu with page link."""
-        # Get the home page
-        home = HomePage.objects.first()
-
         menu = NavigationMenuSetting.objects.create(
             site=self.site,
             menu_items=[
                 {
                     "type": "page_link",
                     "value": {
-                        "page": home.id,
+                        "page": self.home.id,
                         "custom_title": "",
                         "anchor": "",
                     },
@@ -86,7 +94,17 @@ class StreamFieldTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.site = Site.objects.get(is_default_site=True)
+        # Ensure a HomePage exists for tests
         self.home = HomePage.objects.first()
+        if not self.home:
+            # Get the root page
+            root = Site.objects.get(is_default_site=True).root_page
+            self.home = HomePage(
+                title="Test Home Page",
+                slug="home",
+            )
+            root.add_child(instance=self.home)
+            self.home.save_revision().publish()
 
     def test_page_link_block_has_required_fields(self):
         """PageLinkBlock has page, custom_title, and anchor fields."""
@@ -182,7 +200,17 @@ class IntegrationTests(WagtailTestUtils, TestCase):
         """Set up test data."""
         self.site = Site.objects.get(is_default_site=True)
         self.locale = Locale.get_default()
+        # Ensure a HomePage exists for tests
         self.home = HomePage.objects.first()
+        if not self.home:
+            # Get the root page
+            root = Site.objects.get(is_default_site=True).root_page
+            self.home = HomePage(
+                title="Test Home Page",
+                slug="home",
+            )
+            root.add_child(instance=self.home)
+            self.home.save_revision().publish()
 
     def test_create_menu_with_multiple_items(self):
         """Can create menu with multiple page and external links."""
