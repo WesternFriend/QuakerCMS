@@ -435,20 +435,63 @@ def is_page_in_navigation(page):
 **Optimized Alternatives for Production**:
 
 ```python
-# Option 1: Database-level query with JSONField lookups (Django 3.1+)
+# Option 1: Database-level query with JSONField lookups (Django 5.2+)
 from django.db.models import Q
+from django.db import connection
 from navigation.models import NavigationMenuSetting
 
 def is_page_in_navigation_optimized(page):
     """
     Check if page is in navigation using efficient database queries.
-    Works with PostgreSQL JSONField backend.
+
+    ⚠️ DATABASE COMPATIBILITY NOTE:
+    - **PostgreSQL**: Full support for nested JSONField __contains queries
+    - **SQLite**: Nested __contains queries raise NotSupportedError (Django 5.2+)
+    - **Project setup**: SQLite (dev) / PostgreSQL (production)
+
+    IMPLEMENTATION OPTIONS:
+    1. Use PostgreSQL-only with runtime backend check (recommended for production)
+    2. Add try/except fallback to reference implementation (works everywhere)
+    3. Use Python JSON operations for SQLite dev environments (see Option 1b below)
+
+    This implementation requires PostgreSQL and will fail on SQLite.
+    For development with SQLite, use the reference implementation or Option 1b.
     """
     # Check for page_link blocks at top level or within dropdowns
+    # This nested __contains query only works on PostgreSQL
     return NavigationMenuSetting.objects.filter(
         Q(menu_items__contains=[{"type": "page_link", "value": {"page": page.pk}}]) |
         Q(menu_items__contains=[{"type": "dropdown", "value": {"items": [{"type": "page_link", "value": {"page": page.pk}}]}}])
     ).exists()
+
+# Option 1b: Cross-database compatible version with backend detection
+def is_page_in_navigation_cross_db(page):
+    """
+    Check if page is in navigation with automatic backend detection.
+    Falls back to Python iteration on SQLite, uses optimized queries on PostgreSQL.
+    """
+    from navigation.models import NavigationMenuSetting
+
+    # Check database backend
+    if connection.vendor == 'postgresql':
+        # Use optimized PostgreSQL JSONField queries
+        return NavigationMenuSetting.objects.filter(
+            Q(menu_items__contains=[{"type": "page_link", "value": {"page": page.pk}}]) |
+            Q(menu_items__contains=[{"type": "dropdown", "value": {"items": [{"type": "page_link", "value": {"page": page.pk}}]}}])
+        ).exists()
+    else:
+        # Fallback to reference implementation for SQLite/other databases
+        for setting in NavigationMenuSetting.objects.all():
+            for item in setting.menu_items:
+                if item.block_type == 'page_link':
+                    if item.value.get('page') == page:
+                        return True
+                elif item.block_type == 'dropdown':
+                    for child in item.value.get('items', []):
+                        if child.block_type == 'page_link':
+                            if child.value.get('page') == page:
+                                return True
+        return False
 
 # Option 2: Caching strategy for frequently accessed menus
 from django.core.cache import cache
