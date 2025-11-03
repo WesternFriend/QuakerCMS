@@ -495,12 +495,61 @@ def is_page_in_navigation_cross_db(page):
 
 # Option 2: Caching strategy for frequently accessed menus
 from django.core.cache import cache
-from django.views.decorators.cache import cache_page
 
 def get_navigation_for_request_cached(request):
     """
     Get navigation menu with caching to reduce database queries.
-    Cache key should invalidate when menu settings change.
+
+    📚 DJANGO CACHE REFERENCE:
+    For complete documentation on Django's cache framework including:
+    - Cache backend configuration (Memcached, Redis, Database, Filesystem, Local Memory)
+    - Cache arguments (TIMEOUT, OPTIONS, KEY_PREFIX, VERSION, etc.)
+    - Per-site and per-view caching strategies
+    - Template fragment caching
+    - Low-level cache API usage
+    - Cache key prefixing, versioning, and transformation
+    - Asynchronous cache support
+    - Downstream cache control with HTTP headers
+
+    See: https://docs.djangoproject.com/en/5.2/topics/cache/
+
+    💡 RECOMMENDED SETUP: Django Database Cache
+
+    The database cache backend is ideal for this project because:
+    - No additional infrastructure (uses existing database)
+    - Works with both SQLite (dev) and PostgreSQL (production)
+    - Persistent across server restarts
+    - Automatic expiration handling
+    - Built-in support for concurrent access
+
+    Configuration in settings/base.py:
+
+    ```python
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'navigation_cache_table',
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+                'CULL_FREQUENCY': 3,
+            }
+        }
+    }
+    ```
+
+    Create cache table (one-time setup):
+
+    ```bash
+    python manage.py createcachetable
+    ```
+
+    ⚠️ IMPLEMENTATION NOTE:
+    This is a reference example. Production implementations should:
+    1. Configure cache backend in settings.py (see example above)
+    2. Run createcachetable management command
+    3. Consider cache key invalidation strategy (see Option 3 below)
+    4. Handle edge cases (cache unavailable, serialization errors)
+    5. Monitor cache hit rates and adjust timeouts accordingly
     """
     cache_key = f"navigation_menu_{request.site.pk}_{request.LANGUAGE_CODE}"
     menu_settings = cache.get(cache_key)
@@ -515,13 +564,69 @@ def get_navigation_for_request_cached(request):
 # Option 3: Signal-based cache invalidation
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from django.core.cache import cache
 from navigation.models import NavigationMenuSetting
+from core.constants import LANGUAGE_CHOICES
 
 @receiver([post_save, post_delete], sender=NavigationMenuSetting)
 def invalidate_navigation_cache(sender, instance, **kwargs):
-    """Clear navigation cache when settings change."""
-    cache_pattern = f"navigation_menu_{instance.site.pk}_*"
-    cache.delete_pattern(cache_pattern)  # Requires Redis backend
+    """
+    Clear navigation cache when settings change.
+
+    CACHE INVALIDATION OPTIONS:
+
+    Option 3a: Delete specific keys (standard Django cache API - works with any backend)
+    """
+    # Delete cache for all configured languages
+    for language_code, _ in LANGUAGE_CHOICES:
+        cache_key = f"navigation_menu_{instance.site.pk}_{language_code}"
+        cache.delete(cache_key)
+
+# Option 3b: Pattern-based deletion (requires django-redis)
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django_redis import get_redis_connection
+from navigation.models import NavigationMenuSetting
+
+@receiver([post_save, post_delete], sender=NavigationMenuSetting)
+def invalidate_navigation_cache_redis(sender, instance, **kwargs):
+    """
+    Clear navigation cache using Redis pattern deletion.
+
+    ⚠️ REQUIREMENTS:
+    - Install django-redis: `uv add django-redis`
+    - Configure Redis cache backend in settings:
+      CACHES = {
+          'default': {
+              'BACKEND': 'django_redis.cache.RedisCache',
+              'LOCATION': 'redis://127.0.0.1:6379/1',
+          }
+      }
+    """
+    try:
+        redis_conn = get_redis_connection('default')
+        pattern = f"*navigation_menu_{instance.site.pk}_*"
+
+        # Scan for matching keys and delete them
+        cursor = 0
+        while True:
+            cursor, keys = redis_conn.scan(cursor, match=pattern, count=100)
+            if keys:
+                redis_conn.delete(*keys)
+            if cursor == 0:
+                break
+    except Exception as e:
+        # Fallback: log error or use Option 3a approach
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Redis pattern deletion failed: {e}")
+
+        # Fallback to deleting known keys
+        from core.constants import LANGUAGE_CHOICES
+        from django.core.cache import cache
+        for language_code, _ in LANGUAGE_CHOICES:
+            cache_key = f"navigation_menu_{instance.site.pk}_{language_code}"
+            cache.delete(cache_key)
 ```
 
 ---
