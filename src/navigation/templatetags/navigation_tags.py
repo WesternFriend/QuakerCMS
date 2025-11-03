@@ -37,17 +37,32 @@ def navigation_menu(context):
     for item in menu_settings.menu_items:
         _collect_page_ids(item, page_ids)
 
-    # Prefetch all pages with their translations in one query
+    # Prefetch all pages and their translations in bulk to reduce queries
     pages_cache = {}
+    translations_cache = {}  # Cache translations by (translation_key, locale_id)
+
     if page_ids:
-        # Fetch pages and prefetch their locale relations
-        # Note: We can't prefetch translations directly, so we fetch all locales
-        # and let get_translation() handle the lookup efficiently
+        # Fetch all pages with their locale relations
         pages = Page.objects.filter(id__in=page_ids).select_related("locale")
+
+        # Collect translation keys to fetch all translations in one query
+        translation_keys = set()
         for page in pages:
             pages_cache[page.id] = page
+            if page.translation_key:
+                translation_keys.add(page.translation_key)
 
-    # Process menu items with cached pages
+        # Prefetch all translations for these pages in a single query
+        if translation_keys:
+            all_translations = Page.objects.filter(
+                translation_key__in=translation_keys,
+            ).select_related("locale")
+
+            for trans_page in all_translations:
+                cache_key = (trans_page.translation_key, trans_page.locale_id)
+                translations_cache[cache_key] = trans_page
+
+    # Process menu items with cached pages and translations
     processed_items = []
     for item in menu_settings.menu_items:
         processed_item = process_menu_item(
@@ -56,6 +71,7 @@ def navigation_menu(context):
             default_locale,
             context.get("page"),
             pages_cache,
+            translations_cache,
         )
         if processed_item:
             processed_items.append(processed_item)
@@ -73,6 +89,7 @@ def process_menu_item(
     default_locale,
     current_page=None,
     pages_cache=None,
+    translations_cache=None,
 ):
     """Convert menu item to locale-specific version.
 
@@ -82,6 +99,7 @@ def process_menu_item(
         default_locale: Default fallback locale
         current_page: Current page for highlighting active items
         pages_cache: Dict mapping page IDs to prefetched Page objects (optional)
+        translations_cache: Dict mapping (translation_key, locale_id) to translated pages (optional)
     """
     item_type = item.block_type
 
@@ -91,20 +109,33 @@ def process_menu_item(
         if not page or not page.live:
             return None
 
-        # Use cached page if available (already has prefetched translations)
+        # Use cached page if available
         if pages_cache and page.id in pages_cache:
             page = pages_cache[page.id]
 
-        # Try to get page translation
-        try:
-            localized_page = page.get_translation(current_locale)
-        except (Page.DoesNotExist, AttributeError):
+        # Try to get page translation using cache first
+        localized_page = None
+        if translations_cache and page.translation_key:
+            # Try current locale from cache
+            cache_key = (page.translation_key, current_locale.id)
+            localized_page = translations_cache.get(cache_key)
+
+            # Try default locale from cache if current not found
+            if not localized_page:
+                cache_key = (page.translation_key, default_locale.id)
+                localized_page = translations_cache.get(cache_key)
+
+        # Fall back to database queries if not in cache
+        if not localized_page:
             try:
-                localized_page = page.get_translation(default_locale)
+                localized_page = page.get_translation(current_locale)
             except (Page.DoesNotExist, AttributeError):
-                # If page doesn't exist in any locale or doesn't support translations,
-                # use the original page
-                localized_page = page
+                try:
+                    localized_page = page.get_translation(default_locale)
+                except (Page.DoesNotExist, AttributeError):
+                    # If page doesn't exist in any locale or doesn't support translations,
+                    # use the original page
+                    localized_page = page
 
         anchor = item.value.get("anchor", "")
         url = localized_page.url
@@ -143,6 +174,7 @@ def process_menu_item(
                 default_locale,
                 current_page,
                 pages_cache,
+                translations_cache,
             )
             if processed_child:
                 child_items.append(processed_child)
