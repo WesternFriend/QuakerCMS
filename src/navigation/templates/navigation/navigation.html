@@ -7,6 +7,12 @@
 
     <div class="drawer-content flex flex-col">
     {# Desktop Navigation #}
+    {# Note: Desktop and mobile menu rendering are intentionally separate (not using includes) because: #}
+    {# - Different ARIA patterns: role="menubar" (horizontal) vs role="menu" (vertical) #}
+    {# - Different interaction models: hover/click with <button> vs <details>/<summary> #}
+    {# - Different JavaScript requirements: edge detection vs native HTML5 behavior #}
+    {# - Different WCAG patterns for desktop vs mobile/touch navigation #}
+    {# While the data iteration looks similar, the rendering logic is fundamentally different. #}
       <nav class="navbar bg-base-100 hidden lg:flex" aria-label="Main navigation">
         <div class="flex-1">
           <ul class="menu menu-horizontal" role="menubar">
@@ -99,6 +105,11 @@
         </div>
 
       {# Mobile menu items #}
+      {# Note: Mobile rendering intentionally duplicates desktop iteration logic but with different: #}
+      {# - HTML structure: <details>/<summary> for progressive enhancement (no JS required) #}
+      {# - ARIA semantics: vertical menu pattern with touch-friendly targets (min-h-[44px]) #}
+      {# - Interaction model: accordion expansion vs hover/click dropdowns #}
+      {# See desktop section comment above for why this is not extracted to an include. #}
         <ul class="menu p-4 w-full" role="menu">
           {% for item in menu_items %}
             {% if item.type == 'page_link' or item.type == 'external_link' %}
