@@ -1,4 +1,15 @@
-"""StreamField blocks for navigation menu system."""
+"""StreamField blocks for navigation menu system.
+
+Note: These blocks intentionally do NOT define Meta.template for self-rendering because:
+- Rendering depends on request context (current locale, current page)
+- Same block data renders differently for desktop vs mobile (different ARIA patterns)
+- Business logic (locale resolution, page filtering) happens in template tag
+- Desktop uses role="menubar" with <button> dropdowns, mobile uses role="menu" with <details>
+- This separation keeps data structure (blocks) decoupled from presentation (templates)
+
+The navigation_tags.py template tag processes these blocks and transforms them into
+context-aware dictionaries before passing to navigation.html for rendering.
+"""
 
 from wagtail import blocks
 
