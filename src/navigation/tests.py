@@ -1,11 +1,13 @@
 """Tests for navigation menu system."""
 
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from wagtail.models import Locale, Site
 from wagtail.test.utils import WagtailTestUtils
 
+from content.models import ContentPage
 from home.models import HomePage
 from navigation.models import NavigationMenuSetting
+from navigation.templatetags.navigation_tags import process_menu_item
 
 
 class ModelTests(TestCase):
@@ -62,6 +64,20 @@ class ModelTests(TestCase):
         )
         self.assertEqual(len(menu.menu_items), 1)
         self.assertEqual(menu.menu_items[0].block_type, "external_link")
+
+    def test_navigation_menu_for_request(self):
+        """Can retrieve navigation menu for a request."""
+        menu = NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[],
+        )
+
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.site = self.site
+
+        retrieved_menu = NavigationMenuSetting.for_request(request)
+        self.assertEqual(retrieved_menu.id, menu.id)
 
 
 class StreamFieldTests(TestCase):
@@ -178,3 +194,327 @@ class IntegrationTests(WagtailTestUtils, TestCase):
         self.assertEqual(len(menu.menu_items), 2)
         self.assertEqual(menu.menu_items[0].block_type, "page_link")
         self.assertEqual(menu.menu_items[1].block_type, "external_link")
+
+
+class TemplateTagTests(WagtailTestUtils, TestCase):
+    """Tests for navigation template tags."""
+
+    def setUp(self):
+        """Set up test data."""
+        self.factory = RequestFactory()
+        self.site = Site.objects.get(is_default_site=True)
+        self.default_locale = Locale.get_default()
+        self.home = HomePage.objects.first()
+
+        # Create a content page for testing
+        self.about_page = ContentPage(
+            title="About",
+            slug="about",
+            locale=self.default_locale,
+        )
+        self.home.add_child(instance=self.about_page)
+        self.about_page.save_revision().publish()
+
+    def test_process_menu_item_page_link(self):
+        """Process page link returns correct structure."""
+        value = {
+            "page": self.home,
+            "custom_title": "Custom Home",
+            "anchor": "top",
+        }
+
+        class MockBlockValue:
+            block_type = "page_link"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+            self.home,
+        )
+
+        self.assertEqual(result["type"], "page_link")
+        self.assertEqual(result["title"], "Custom Home")
+        self.assertIn("#top", result["url"])
+        self.assertTrue(result["is_current"])
+
+    def test_process_menu_item_page_link_without_custom_title(self):
+        """Process page link uses page title when custom title is empty."""
+        value = {
+            "page": self.home,
+            "custom_title": "",
+            "anchor": "",
+        }
+
+        class MockBlockValue:
+            block_type = "page_link"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertEqual(result["title"], self.home.title)
+        self.assertFalse(result["is_current"])
+
+    def test_process_menu_item_external_link(self):
+        """Process external link returns correct structure."""
+        value = {
+            "url": "https://example.com",
+            "title": "Example Site",
+            "anchor": "section",
+        }
+
+        class MockBlockValue:
+            block_type = "external_link"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertEqual(result["type"], "external_link")
+        self.assertEqual(result["url"], "https://example.com#section")
+        self.assertEqual(result["title"], "Example Site")
+        self.assertFalse(result["is_current"])
+
+    def test_process_menu_item_external_link_without_anchor(self):
+        """Process external link works without anchor."""
+        value = {
+            "url": "https://example.com",
+            "title": "Example",
+            "anchor": "",
+        }
+
+        class MockBlockValue:
+            block_type = "external_link"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertEqual(result["url"], "https://example.com")
+
+    def test_process_menu_item_dropdown(self):
+        """Process dropdown with children."""
+        page_value = {
+            "page": self.about_page,
+            "custom_title": "",
+            "anchor": "",
+        }
+
+        class MockBlockValue:
+            def __init__(self, block_type, val):
+                self.block_type = block_type
+                self.value = val
+
+        child_item = MockBlockValue("page_link", page_value)
+
+        dropdown_value = {
+            "title": "Resources",
+            "items": [child_item],
+        }
+
+        dropdown_item = MockBlockValue("dropdown", dropdown_value)
+
+        result = process_menu_item(
+            dropdown_item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertEqual(result["type"], "dropdown")
+        self.assertEqual(result["title"], "Resources")
+        self.assertEqual(len(result["items"]), 1)
+        self.assertEqual(result["items"][0]["type"], "page_link")
+        self.assertFalse(result["is_open"])
+
+    def test_process_menu_item_dropdown_with_current_page(self):
+        """Process dropdown marks is_open when contains current page."""
+        page_value = {
+            "page": self.about_page,
+            "custom_title": "",
+            "anchor": "",
+        }
+
+        class MockBlockValue:
+            def __init__(self, block_type, val):
+                self.block_type = block_type
+                self.value = val
+
+        child_item = MockBlockValue("page_link", page_value)
+
+        dropdown_value = {
+            "title": "Resources",
+            "items": [child_item],
+        }
+
+        dropdown_item = MockBlockValue("dropdown", dropdown_value)
+
+        result = process_menu_item(
+            dropdown_item,
+            self.default_locale,
+            self.default_locale,
+            self.about_page,  # Current page
+        )
+
+        self.assertTrue(result["is_open"])
+
+    def test_process_menu_item_dropdown_empty_children(self):
+        """Process dropdown returns None when all children are invalid."""
+        dropdown_value = {
+            "title": "Empty Dropdown",
+            "items": [],
+        }
+
+        class MockBlockValue:
+            def __init__(self, block_type, val):
+                self.block_type = block_type
+                self.value = val
+
+        dropdown_item = MockBlockValue("dropdown", dropdown_value)
+
+        result = process_menu_item(
+            dropdown_item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertIsNone(result)
+
+    def test_process_menu_item_page_link_unpublished_page(self):
+        """Process page link returns None for unpublished page."""
+        # Create unpublished page
+        unpublished_page = ContentPage(
+            title="Draft",
+            slug="draft",
+            locale=self.default_locale,
+            live=False,
+        )
+        self.home.add_child(instance=unpublished_page)
+
+        value = {
+            "page": unpublished_page,
+            "custom_title": "",
+            "anchor": "",
+        }
+
+        class MockBlockValue:
+            block_type = "page_link"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertIsNone(result)
+
+    def test_process_menu_item_page_link_none_page(self):
+        """Process page link returns None when page is None."""
+        value = {
+            "page": None,
+            "custom_title": "",
+            "anchor": "",
+        }
+
+        class MockBlockValue:
+            block_type = "page_link"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertIsNone(result)
+
+    def test_process_menu_item_unknown_type(self):
+        """Process menu item returns None for unknown type."""
+        value = {}
+
+        class MockBlockValue:
+            block_type = "unknown_type"
+
+            def __init__(self, val):
+                self.value = val
+
+        item = MockBlockValue(value)
+
+        result = process_menu_item(
+            item,
+            self.default_locale,
+            self.default_locale,
+        )
+
+        self.assertIsNone(result)
+
+    def test_navigation_menu_tag_with_empty_menu(self):
+        """Navigation menu tag returns empty list when no menu items."""
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[],
+        )
+
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        # Should not raise error
+        result = template.render(context)
+        self.assertIsNotNone(result)
+
+    def test_navigation_menu_tag_without_settings(self):
+        """Navigation menu tag handles missing settings gracefully."""
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        # Delete any existing settings
+        NavigationMenuSetting.objects.filter(site=self.site).delete()
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        # Should not raise error
+        result = template.render(context)
+        self.assertIsNotNone(result)

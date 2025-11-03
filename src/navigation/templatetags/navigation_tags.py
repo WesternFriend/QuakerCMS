@@ -52,12 +52,14 @@ def process_menu_item(item, current_locale, default_locale, current_page=None):
 
         # Try to get page translation
         try:
-            localized_page = page.localized.get(locale=current_locale)
-        except Page.DoesNotExist:
+            localized_page = page.get_translation(current_locale)
+        except (Page.DoesNotExist, AttributeError):
             try:
-                localized_page = page.localized.get(locale=default_locale)
-            except Page.DoesNotExist:
-                return None
+                localized_page = page.get_translation(default_locale)
+            except (Page.DoesNotExist, AttributeError):
+                # If page doesn't exist in any locale or doesn't support translations,
+                # use the original page
+                localized_page = page
 
         anchor = item.value.get("anchor", "")
         url = localized_page.url
