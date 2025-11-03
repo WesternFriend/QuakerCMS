@@ -317,52 +317,6 @@ class MenuItemBlock(StreamBlock):
 
 ## Database Schema
 
-### Django Migration
-
-**File**: `src/navigation/migrations/0001_initial.py` (auto-generated)
-
-```python
-from django.db import migrations
-import wagtail.fields
-import wagtail.blocks
-import wagtail.contrib.settings.models
-
-class Migration(migrations.Migration):
-    initial = True
-
-    dependencies = [
-        ('wagtailcore', '__latest__'),  # Depends on Wagtail core
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='NavigationMenuSetting',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('menu_items', wagtail.fields.StreamField(
-                    [
-                        ('page_link', wagtail.blocks.StructBlock([...])),
-                        ('external_link', wagtail.blocks.StructBlock([...])),
-                        ('dropdown', wagtail.blocks.StructBlock([...])),
-                    ],
-                    blank=True,
-                    use_json_field=True,
-                )),
-                ('site', models.OneToOneField(
-                    editable=False,
-                    on_delete=models.CASCADE,
-                    to='wagtailcore.site'
-                )),
-            ],
-            options={
-                'verbose_name': 'Navigation Menu',
-                'verbose_name_plural': 'Navigation Menu',
-            },
-            bases=(wagtail.contrib.settings.models.BaseSiteSetting, models.Model),
-        ),
-    ]
-```
-
 ### Storage Format
 
 **Table**: `navigation_navigationmenusetting`
