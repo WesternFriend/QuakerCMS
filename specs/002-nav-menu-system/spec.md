@@ -15,6 +15,12 @@
 - Q: When a page linked in a menu is deleted, how should the system handle that menu item? → A: Automatically remove from menu immediately when page is deleted (or prevent deletion to preserve referential integrity)
 - Q: When the navigation menu has no menu items configured, how should it render on the front-end? → A: Hide `<nav>` element entirely (do not render navigation section at all)
 
+### Session 2025-11-03
+
+- Q: Should the navigation menu implement caching to reduce database load? → A: Yes - use database cache (1-hour TTL, invalidate on menu save)
+- Q: Should the navigation menu implement error logging and monitoring? → A: Yes - Django logging (ERROR level to console + file)
+- Q: Should the system enforce a maximum total number of menu items? → A: Soft limit (100 items total) - show admin warning when approaching limit, allow override for edge cases
+
 ## Design Philosophy
 
 This feature prioritizes **simplicity over flexibility** to serve Quaker meetings and worship groups who need to focus on content rather than technical configuration. Unlike WordPress's multi-menu system, QuakerCMS provides a single, site-wide navigation menu that covers the primary use case without requiring users to understand concepts like "menu locations" or "menu assignment." This intentional constraint reduces cognitive load and administrative overhead while still delivering full multi-lingual support and nested menu capabilities.
@@ -176,6 +182,15 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - **FR-022a**: System SHOULD optionally prevent deletion of pages that are referenced in the navigation menu and display a warning message listing where the page is used
 - **FR-023**: System MUST allow administrators to delete menu items
 - **FR-024**: System MUST save menu changes only when administrator explicitly saves
+- **FR-024a**: System MUST cache rendered navigation menus using Django's database cache backend with 1-hour TTL to reduce database queries
+- **FR-024b**: System MUST invalidate cached navigation menus immediately when menu settings are saved or deleted
+- **FR-024c**: System MUST generate separate cache keys per site and locale (format: `navigation_menu_{site_pk}_{language_code}`)
+- **FR-024d**: System MUST log navigation-related errors (cache failures, invalid page references, locale resolution errors) using Django's logging framework at ERROR level
+- **FR-024e**: System MUST log to console in development and to file in production environments
+- **FR-024f**: System MUST gracefully degrade when cache is unavailable (fall back to direct database queries and log the cache failure)
+- **FR-024g**: System MUST display a warning in the admin interface when total menu items (including all nested items) approaches 100 items
+- **FR-024h**: System MUST allow administrators to save menus exceeding 100 items (soft limit with warning, not a hard block)
+- **FR-024i**: System MUST count all menu items recursively (top-level items + dropdown items + nested items) when calculating total for the warning threshold
 
 #### Frontend Rendering & Accessibility (WCAG 2.1 AA Compliance)
 
