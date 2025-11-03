@@ -31,6 +31,7 @@
               {% elif item.type == 'dropdown' %}
                 <li role="none" class="dropdown dropdown-hover">
                   <button
+                    id="dropdown-trigger-{{ forloop.counter }}"
                     role="menuitem"
                     aria-haspopup="true"
                     aria-expanded="false"
