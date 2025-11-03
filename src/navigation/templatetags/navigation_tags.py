@@ -129,10 +129,10 @@ def process_menu_item(
         if not localized_page:
             try:
                 localized_page = page.get_translation(current_locale)
-            except (Page.DoesNotExist, AttributeError):
+            except Page.DoesNotExist:
                 try:
                     localized_page = page.get_translation(default_locale)
-                except (Page.DoesNotExist, AttributeError):
+                except Page.DoesNotExist:
                     # If page doesn't exist in any locale or doesn't support translations,
                     # use the original page
                     localized_page = page
