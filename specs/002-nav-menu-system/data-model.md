@@ -458,6 +458,10 @@ def is_page_in_navigation(page):
     """
     Check if a page is referenced in any navigation menu.
     Useful for preventing deletion or showing warnings.
+
+    ⚠️ PERFORMANCE NOTE: This reference implementation iterates through all
+    menu items in Python. For production use with large sites or frequent calls,
+    consider the optimized alternatives below.
     """
     from navigation.models import NavigationMenuSetting
 
@@ -472,6 +476,55 @@ def is_page_in_navigation(page):
                         if child.value.get('page') == page:
                             return True
     return False
+```
+
+**Optimized Alternatives for Production**:
+
+```python
+# Option 1: Database-level query with JSONField lookups (Django 3.1+)
+from django.db.models import Q
+from navigation.models import NavigationMenuSetting
+
+def is_page_in_navigation_optimized(page):
+    """
+    Check if page is in navigation using efficient database queries.
+    Works with PostgreSQL JSONField backend.
+    """
+    # Check for page_link blocks at top level or within dropdowns
+    return NavigationMenuSetting.objects.filter(
+        Q(menu_items__contains=[{"type": "page_link", "value": {"page": page.pk}}]) |
+        Q(menu_items__contains=[{"type": "dropdown", "value": {"items": [{"type": "page_link", "value": {"page": page.pk}}]}}])
+    ).exists()
+
+# Option 2: Caching strategy for frequently accessed menus
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+
+def get_navigation_for_request_cached(request):
+    """
+    Get navigation menu with caching to reduce database queries.
+    Cache key should invalidate when menu settings change.
+    """
+    cache_key = f"navigation_menu_{request.site.pk}_{request.LANGUAGE_CODE}"
+    menu_settings = cache.get(cache_key)
+
+    if menu_settings is None:
+        menu_settings = NavigationMenuSetting.for_request(request)
+        # Cache for 1 hour; invalidate in NavigationMenuSetting.save()
+        cache.set(cache_key, menu_settings, 60 * 60)
+
+    return menu_settings
+
+# Option 3: Signal-based cache invalidation
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from navigation.models import NavigationMenuSetting
+
+@receiver([post_save, post_delete], sender=NavigationMenuSetting)
+def invalidate_navigation_cache(sender, instance, **kwargs):
+    """Clear navigation cache when settings change."""
+    cache_pattern = f"navigation_menu_{instance.site.pk}_*"
+    cache.delete_pattern(cache_pattern)  # Requires Redis backend
 ```
 
 ---
