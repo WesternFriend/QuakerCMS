@@ -87,18 +87,14 @@ class DropdownMenuBlock(blocks.StructBlock):
 
     def clean(self, value):
         """Validate that dropdown contains at least one item."""
-        # Call parent clean first to get cleaned values
-        try:
-            cleaned = super().clean(value)
-        except blocks.StructBlockValidationError:
-            # If parent validation fails, provide our custom message
-            raise ValidationError("Dropdown menu must contain at least one item")
-
-        # Double-check if items list is empty
-        items = cleaned.get("items") if cleaned else []
+        # Check if items is empty before calling super().clean()
+        # This allows us to provide a more specific error message
+        items = value.get("items") if isinstance(value, dict) else []
         if not items:
             raise ValidationError("Dropdown menu must contain at least one item")
 
+        # Call parent clean to validate other fields
+        cleaned = super().clean(value)
         return cleaned
 
     class Meta:
