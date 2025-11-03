@@ -170,11 +170,17 @@
 
     // Show dropdown on hover or focus
         const showDropdown = () => {
+          // Temporarily make menu visible for measurement (but not visually shown yet)
+          // This allows getBoundingClientRect() to return actual dimensions
+          const wasHidden = menu.style.visibility === 'hidden';
+          menu.style.visibility = 'hidden';
+          menu.style.display = 'block';
+
           const buttonRect = button.getBoundingClientRect();
           const menuRect = menu.getBoundingClientRect();
           const viewportWidth = window.innerWidth;
 
-      // Check if dropdown would overflow right edge
+          // Check if dropdown would overflow right edge
           if (buttonRect.left + menuRect.width > viewportWidth) {
             menu.style.right = '0';
             menu.style.left = 'auto';
@@ -183,6 +189,11 @@
             menu.style.right = 'auto';
           }
 
+          // Restore visibility now that positioning is set
+          menu.style.visibility = '';
+          menu.style.display = '';
+
+          // Finally set aria-expanded to match visual state
           button.setAttribute('aria-expanded', 'true');
         };
 
