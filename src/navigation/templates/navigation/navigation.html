@@ -229,11 +229,13 @@
 
   // Update drawer button aria-expanded state
       const drawerToggle = document.getElementById('nav-drawer');
-      const drawerButton = document.querySelector('label[for="nav-drawer"]');
+      const drawerButtons = document.querySelectorAll('label[for="nav-drawer"]');
 
-      if (drawerToggle && drawerButton) {
+      if (drawerToggle && drawerButtons.length > 0) {
         drawerToggle.addEventListener('change', () => {
-          drawerButton.setAttribute('aria-expanded', drawerToggle.checked);
+          drawerButtons.forEach(button => {
+            button.setAttribute('aria-expanded', drawerToggle.checked);
+          });
         });
       }
     });
