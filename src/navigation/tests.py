@@ -518,3 +518,228 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
         # Should not raise error
         result = template.render(context)
         self.assertIsNotNone(result)
+
+    def test_navigation_menu_tag_renders_page_links(self):
+        """Navigation menu tag renders page links correctly."""
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.home.id,
+                        "custom_title": "Home",
+                        "anchor": "",
+                    },
+                },
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.about_page.id,
+                        "custom_title": "",
+                        "anchor": "section",
+                    },
+                },
+            ],
+        )
+
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        result = template.render(context)
+        self.assertIn("Home", result)
+        self.assertIn("About", result)
+
+    def test_navigation_menu_tag_renders_external_links(self):
+        """Navigation menu tag renders external links correctly."""
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "external_link",
+                    "value": {
+                        "url": "https://example.com",
+                        "title": "Example Site",
+                        "anchor": "",
+                    },
+                },
+            ],
+        )
+
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        result = template.render(context)
+        self.assertIn("Example Site", result)
+        self.assertIn("https://example.com", result)
+
+    def test_navigation_menu_tag_renders_dropdowns(self):
+        """Navigation menu tag renders dropdown menus correctly."""
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "dropdown",
+                    "value": {
+                        "title": "Resources",
+                        "items": [
+                            {
+                                "type": "page_link",
+                                "value": {
+                                    "page": self.about_page.id,
+                                    "custom_title": "About Us",
+                                    "anchor": "",
+                                },
+                            },
+                            {
+                                "type": "external_link",
+                                "value": {
+                                    "url": "https://docs.example.com",
+                                    "title": "Documentation",
+                                    "anchor": "",
+                                },
+                            },
+                        ],
+                    },
+                },
+            ],
+        )
+
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        result = template.render(context)
+        self.assertIn("Resources", result)
+        self.assertIn("About Us", result)
+        self.assertIn("Documentation", result)
+
+    def test_navigation_menu_tag_marks_current_page(self):
+        """Navigation menu tag marks current page correctly."""
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.home.id,
+                        "custom_title": "Home",
+                        "anchor": "",
+                    },
+                },
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.about_page.id,
+                        "custom_title": "About",
+                        "anchor": "",
+                    },
+                },
+            ],
+        )
+
+        request = self.factory.get("/about/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.about_page})
+
+        result = template.render(context)
+        self.assertIn('aria-current="page"', result)
+
+    def test_navigation_menu_tag_filters_unpublished_pages(self):
+        """Navigation menu tag filters out unpublished pages."""
+        # Create unpublished page
+        draft_page = ContentPage(
+            title="Draft",
+            slug="draft",
+            locale=self.default_locale,
+            live=False,
+        )
+        self.home.add_child(instance=draft_page)
+
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": draft_page.id,
+                        "custom_title": "Draft",
+                        "anchor": "",
+                    },
+                },
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.about_page.id,
+                        "custom_title": "About",
+                        "anchor": "",
+                    },
+                },
+            ],
+        )
+
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        result = template.render(context)
+        # Draft should not appear
+        self.assertNotIn("Draft", result)
+        # Published page should appear
+        self.assertIn("About", result)
+
+    def test_navigation_menu_tag_handles_deleted_pages(self):
+        """Navigation menu tag handles references to deleted pages gracefully."""
+        # Create menu with reference to page
+        NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.about_page.id,
+                        "custom_title": "About",
+                        "anchor": "",
+                    },
+                },
+            ],
+        )
+
+        # Delete the page
+        self.about_page.delete()
+
+        request = self.factory.get("/")
+        request.site = self.site
+
+        from django.template import Context, Template
+
+        template = Template("{% load navigation_tags %}{% navigation_menu %}")
+        context = Context({"request": request, "page": self.home})
+
+        # Should not raise error
+        result = template.render(context)
+        self.assertIsNotNone(result)
+        # Page should not appear in menu
+        self.assertNotIn("About", result)
