@@ -101,18 +101,16 @@ src/
 │   ├── admin.py        # Admin customization (if needed)
 │   ├── blocks.py       # Menu item StreamField blocks
 │   ├── tests.py        # Comprehensive test suite
+│   ├── templatetags/
+│   │   └── navigation_tags.py  # Template tag for rendering menu
 │   ├── migrations/
 │   │   └── 0001_initial.py
 │   └── templates/
 │       └── navigation/
-│           ├── navigation.html          # Main nav component
-│           ├── navigation_item.html     # Simple link block
-│           └── navigation_dropdown.html # Dropdown menu block
+│           └── navigation.html  # Complete navigation template (mobile + desktop)
 ├── core/
 │   ├── templates/
-│   │   ├── base.html   # MODIFIED: Include navigation component
-│   │   └── components/
-│   │       └── navigation.html  # May be moved here from navigation app
+│   │   └── base.html   # MODIFIED: Include navigation_menu tag
 │   └── settings/
 │       └── base.py     # MODIFIED: Add 'navigation' to INSTALLED_APPS
 └── theme/

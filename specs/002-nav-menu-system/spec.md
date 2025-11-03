@@ -242,10 +242,8 @@ The navigation menu system uses standard Tailwind CSS / DaisyUI breakpoints for 
 - **FR-038**: Mobile hamburger menu MUST use accessible button with `aria-expanded` state
 - **FR-039**: Navigation MUST provide skip link for keyboard users to bypass menu and jump to main content
 - **FR-040**: Dropdown menus SHOULD use `<details>`/`<summary>` elements for progressive enhancement (works without JavaScript)
-- **FR-041**: Navigation templates MUST be structured as reusable components:
-  - `navigation.html` - Main navigation wrapper
-  - `navigation_item.html` - Simple link rendering
-  - `navigation_dropdown.html` - Dropdown menu rendering
+- **FR-041**: Navigation templates MUST be structured as a single consolidated template:
+  - `navigation.html` - Complete navigation template with mobile drawer, desktop menubar, and dropdown rendering
 - **FR-042**: Navigation component MUST be included in `base.html` template for site-wide availability
 - **FR-043**: Menu links MUST have minimum touch target size of 44x44 pixels for mobile accessibility
 - **FR-044**: Color contrast MUST meet WCAG AA standards (4.5:1 for normal text, 3:1 for large text)
@@ -267,10 +265,8 @@ The navigation menu system uses standard Tailwind CSS / DaisyUI breakpoints for 
 
 ### Frontend Template Structure
 
-- **navigation.html**: Main navigation component template that renders the complete menu structure with ARIA semantics, responsive layout, and theme support. Included in `base.html` for site-wide availability.
-- **navigation_item.html**: Reusable template block for rendering simple menu links (both top-level and within dropdowns) with proper ARIA roles and active page indication.
-- **navigation_dropdown.html**: Template block for rendering dropdown menus with `<details>`/`<summary>` elements, ARIA properties (`aria-haspopup`, `aria-controls`, `aria-labelledby`), and nested child items.
-- **Skip Link**: Visually hidden anchor link positioned as first focusable element, allowing keyboard users to bypass navigation and jump to main content (WCAG 2.1 requirement).
+- **navigation.html**: Complete navigation component template that renders the entire menu structure including mobile drawer, desktop menubar, and dropdown menus with ARIA semantics, responsive layout, DaisyUI components, and theme support. Included in `base.html` for site-wide availability.
+- **Skip Link**: Visually hidden anchor link positioned as first focusable element in `base.html`, allowing keyboard users to bypass navigation and jump to main content (WCAG 2.1 requirement).
 - **Theme Classes**: DaisyUI theme-aware utility classes (e.g., `bg-base-100`, `text-base-content`) that automatically adapt to active theme (light/dark) without hardcoded colors.
 
 ## Success Criteria *(mandatory)*
