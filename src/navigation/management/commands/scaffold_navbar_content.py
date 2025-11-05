@@ -125,13 +125,34 @@ class Command(BaseCommand):
         """Create sample pages for testing."""
         self.stdout.write("Creating sample pages...")
 
+        def get_or_create_page(parent, *, title, slug, body):
+            """Get existing page or create a new one (idempotent)."""
+            existing = (
+                parent.get_children()
+                .type(ContentPage)
+                .filter(slug=slug, locale=locale)
+                .first()
+            )
+            if existing:
+                return existing.specific
+
+            page = ContentPage(
+                title=title,
+                slug=slug,
+                locale=locale,
+                body=body,
+            )
+            parent.add_child(instance=page)
+            page.save_revision().publish()
+            return page
+
         pages = []
 
         # Top-level pages
-        about_page = ContentPage(
+        about_page = get_or_create_page(
+            home_page,
             title="About",
             slug="dev_about",
-            locale=locale,
             body=[
                 {
                     "type": "heading",
@@ -143,14 +164,12 @@ class Command(BaseCommand):
                 },
             ],
         )
-        home_page.add_child(instance=about_page)
-        about_page.save_revision().publish()
         pages.append(about_page)
 
-        programs_page = ContentPage(
+        programs_page = get_or_create_page(
+            home_page,
             title="Programs",
             slug="dev_programs",
-            locale=locale,
             body=[
                 {
                     "type": "heading",
@@ -162,15 +181,13 @@ class Command(BaseCommand):
                 },
             ],
         )
-        home_page.add_child(instance=programs_page)
-        programs_page.save_revision().publish()
         pages.append(programs_page)
 
         # Sub-pages under Programs (for dropdown testing)
-        adult_education = ContentPage(
+        adult_education = get_or_create_page(
+            programs_page,
             title="Adult Education",
             slug="dev_adult-education",
-            locale=locale,
             body=[
                 {
                     "type": "heading",
@@ -182,14 +199,12 @@ class Command(BaseCommand):
                 },
             ],
         )
-        programs_page.add_child(instance=adult_education)
-        adult_education.save_revision().publish()
         pages.append(adult_education)
 
-        youth_programs = ContentPage(
+        youth_programs = get_or_create_page(
+            programs_page,
             title="Youth Programs",
             slug="dev_youth-programs",
-            locale=locale,
             body=[
                 {
                     "type": "heading",
@@ -201,15 +216,13 @@ class Command(BaseCommand):
                 },
             ],
         )
-        programs_page.add_child(instance=youth_programs)
-        youth_programs.save_revision().publish()
         pages.append(youth_programs)
 
         # Additional top-level page
-        contact_page = ContentPage(
+        contact_page = get_or_create_page(
+            home_page,
             title="Contact",
             slug="dev_contact",
-            locale=locale,
             body=[
                 {
                     "type": "heading",
@@ -221,8 +234,6 @@ class Command(BaseCommand):
                 },
             ],
         )
-        home_page.add_child(instance=contact_page)
-        contact_page.save_revision().publish()
         pages.append(contact_page)
 
         self.stdout.write(self.style.SUCCESS(f"Created {len(pages)} pages"))

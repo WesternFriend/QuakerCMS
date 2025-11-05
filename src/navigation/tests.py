@@ -1242,6 +1242,68 @@ class ManagementCommandTests(WagtailTestUtils, TestCase):
         # Should not say "Deleted" since nothing was deleted
         self.assertNotIn("Deleted", output)
 
+    def test_scaffold_navbar_content_is_idempotent(self):
+        """Scaffold command can be run multiple times without --delete (idempotent)."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Run scaffold command first time
+        call_command("scaffold_navbar_content", stdout=StringIO())
+
+        # Verify initial content exists
+        about_page = ContentPage.objects.filter(slug="dev_about").first()
+        programs_page = ContentPage.objects.filter(slug="dev_programs").first()
+        contact_page = ContentPage.objects.filter(slug="dev_contact").first()
+        adult_ed_page = ContentPage.objects.filter(slug="dev_adult-education").first()
+
+        self.assertIsNotNone(about_page)
+        self.assertIsNotNone(programs_page)
+        self.assertIsNotNone(contact_page)
+        self.assertIsNotNone(adult_ed_page)
+
+        # Store IDs to verify they don't change
+        about_id = about_page.id
+        programs_id = programs_page.id
+        contact_id = contact_page.id
+        adult_ed_id = adult_ed_page.id
+
+        # Run scaffold command second time WITHOUT --delete
+        # This should reuse existing pages, not create duplicates or fail
+        out = StringIO()
+        call_command("scaffold_navbar_content", stdout=out)
+
+        # Verify pages still exist with SAME IDs (reused, not recreated)
+        about_page_after = ContentPage.objects.filter(slug="dev_about").first()
+        programs_page_after = ContentPage.objects.filter(slug="dev_programs").first()
+        contact_page_after = ContentPage.objects.filter(slug="dev_contact").first()
+        adult_ed_page_after = ContentPage.objects.filter(
+            slug="dev_adult-education",
+        ).first()
+
+        self.assertIsNotNone(about_page_after)
+        self.assertIsNotNone(programs_page_after)
+        self.assertIsNotNone(contact_page_after)
+        self.assertIsNotNone(adult_ed_page_after)
+
+        # Verify IDs are the same (pages were reused, not recreated)
+        self.assertEqual(about_page_after.id, about_id)
+        self.assertEqual(programs_page_after.id, programs_id)
+        self.assertEqual(contact_page_after.id, contact_id)
+        self.assertEqual(adult_ed_page_after.id, adult_ed_id)
+
+        # Verify no duplicate pages were created
+        self.assertEqual(ContentPage.objects.filter(slug="dev_about").count(), 1)
+        self.assertEqual(ContentPage.objects.filter(slug="dev_programs").count(), 1)
+        self.assertEqual(ContentPage.objects.filter(slug="dev_contact").count(), 1)
+        self.assertEqual(
+            ContentPage.objects.filter(slug="dev_adult-education").count(),
+            1,
+        )
+
+        output = out.getvalue()
+        self.assertIn("Created 5 pages", output)
+
     def test_scaffold_navbar_content_no_site_error(self):
         """Scaffold command fails gracefully with no site."""
         from io import StringIO
