@@ -10,6 +10,10 @@ A specialized content management system designed for Quaker meetings and worship
 
 **Built for the global Quaker community** with translation and localization as first-class features, supporting the international and multilingual nature of Friends worldwide.
 
+## Screenshots
+
+_Coming soon: Screenshots of the navigation system, content editing, and admin interface._
+
 ## Purpose
 
 QuakerCMS provides a standardized platform for Quaker communities to publish and discover important content, fostering connection and continuity within the broader Quaker movement. The system recognizes the unique content types and communication patterns that are central to Quaker spiritual life and community organization.
@@ -25,26 +29,35 @@ We envision a federated network of Quaker websites that can share content with o
 
 ## Key Features
 
+### Currently Implemented
+
+- **📱 Responsive Navigation** - Mobile-friendly menu system with dropdown support
+- **🌍 Multilingual Ready** - Runtime-configurable language support for international communities
+- **♿ Accessibility** - WCAG 2.1 AA compliant with screen reader support
+- **📝 Flexible Content** - Rich text editing with structured content blocks
+- **🎨 Modern Design** - Clean, Quaker-inspired aesthetic with customizable styling
+- **🔍 Search** - Built-in search functionality for finding content
+
 ### Content Types for Quaker Communities
 
-QuakerCMS is designed to handle the specific types of content that Quaker communities regularly publish:
+QuakerCMS is being designed to handle the specific types of content that Quaker communities regularly publish:
 
-- **Epistles** - Formal spiritual letters and communications between meetings, part of the rich tradition of Quaker writings
-- **Minutes** - Records of business meetings and corporate decisions
-- **Announcements** - Community news and updates
-- **Events** - Structured event information with relevant details (time, location, description)
-- **Newsletters** - Regular community publications
-- **Pamphlets** - Educational and spiritual materials
+- **Epistles** - Formal spiritual letters and communications between meetings (Planned)
+- **Minutes** - Records of business meetings and corporate decisions (Planned)
+- **Announcements** - Community news and updates (Planned)
+- **Events** - Structured event information (Planned)
+- **Newsletters** - Regular community publications (Planned)
+- **Pamphlets** - Educational and spiritual materials (Planned)
 
-### Technical Goals
+### Future Roadmap
 
-- **Internationalization First** - Built-in support for 19+ languages with runtime-configurable localization, enabling Quaker communities worldwide to publish content in their native languages
-- **Multi-tenant Architecture** - Single instance can host multiple meetings and worship groups
+- **Multi-tenant Architecture** - Single instance hosting multiple meetings and worship groups
 - **Content Federation** - Meetings can share content with other instances for broader discovery
-- **Standards-Based** - Uses open web standards for content syndication (RSS, Atom)
-- **Mobile-Friendly** - Responsive design that works on all devices
-- **Open Source** - No dependency on proprietary services or software
-- **Simple Management** - Easy-to-use interface for content managers
+- **Content Syndication** - RSS/Atom feeds for content distribution
+- **Advanced Search** - Faceted search with filters for content types, dates, and topics
+- **User Roles & Permissions** - Fine-grained access control for different community roles
+- **Digital Archives** - Historical document preservation and organization
+- **Custom Domains** - Each meeting can use their own domain name
 
 ## Use Cases
 
@@ -88,20 +101,57 @@ QuakerCMS is designed to handle the specific types of content that Quaker commun
 
 ## Getting Started
 
-For information on setting up a development environment or contributing to the project, see our [Contributing Guide](CONTRIBUTING.md).
+### For Contributors
+
+Interested in contributing to QuakerCMS? Our [Contributing Guide](CONTRIBUTING.md) has everything you need:
+
+- Setting up your development environment
+- Running the development servers
+- Creating test content and navigation menus
+- Code quality standards and testing
+- Troubleshooting common issues
+
+### For Site Administrators
+
+Documentation for deploying and administering QuakerCMS instances is coming soon.
+
+### For Content Managers
+
+User guides for creating and managing content are in development.
 
 ## Technology Stack
 
-QuakerCMS is built with:
+QuakerCMS is built with modern, open-source technologies:
 
-- **Python 3.12+** - Modern Python for reliable backend development
-- **Django** - Robust web framework for rapid development
-- **Wagtail CMS** - Flexible content management system with excellent editing experience
-- **uv** - Fast Python package management
+- **[Wagtail CMS](https://wagtail.org/)** - Flexible, user-friendly content management
+- **[Django](https://www.djangoproject.com/)** - Robust Python web framework
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[DaisyUI](https://daisyui.com/)** - Accessible component library
+
+All built on **Python 3.12+** with **[uv](https://docs.astral.sh/uv/)** for fast, reliable package management.
 
 ## Project Status
 
-QuakerCMS is in active development. We are working toward an initial release that will support basic content management for individual meetings, with federation and multi-tenant capabilities planned for future releases.
+**Current Phase**: Active Development (Pre-Alpha)
+
+### Recent Milestones
+
+- ✅ **Navigation System** - Responsive, accessible menu with dropdown support
+- ✅ **Content Structure** - Flexible page building with rich text and structured blocks
+- ✅ **Internationalization** - Runtime-configurable language support
+- ✅ **Modern UI** - Tailwind CSS with DaisyUI components
+
+### Next Up
+
+- 🚧 **Specialized Content Types** - Epistles, Minutes, Events, Announcements
+- 🚧 **User Authentication** - Member login and permissions
+- 🚧 **Search Enhancement** - Improved search with filters and facets
+
+### Timeline
+
+We are working toward a **beta release in Q2 2026** that will support basic content management for individual meetings. Federation and multi-tenant capabilities are planned for future releases.
+
+Want to contribute? See our [Contributing Guide](CONTRIBUTING.md) to get involved!
 
 ## Community
 

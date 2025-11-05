@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "search",
     "locales",
     "content",
+    "navigation",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.settings",

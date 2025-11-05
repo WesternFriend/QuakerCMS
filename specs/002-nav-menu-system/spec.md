@@ -9,11 +9,17 @@
 
 ### Session 2025-10-26
 
-- Q: For mobile devices (< 1024px), what UX pattern should the hamburger menu use when opened? → A: DaisyUI drawer component that slides in from left side
-- Q: How should dropdown menus open on desktop devices? → A: Hover on desktop (≥1024px), click/tap on all devices
+- Q: For mobile devices (mobile/tablet breakpoints: `< lg` / < 1024px), what UX pattern should the hamburger menu use when opened? → A: DaisyUI drawer component that slides in from left side
+- Q: How should dropdown menus open on desktop devices? → A: Hover on desktop breakpoint (`lg+` / ≥1024px), click/tap on all devices
 - Q: How should dropdown menus behave inside the mobile hamburger drawer? → A: Accordion-style expansion within drawer (submenus expand in-place below parent item)
 - Q: When a page linked in a menu is deleted, how should the system handle that menu item? → A: Automatically remove from menu immediately when page is deleted (or prevent deletion to preserve referential integrity)
 - Q: When the navigation menu has no menu items configured, how should it render on the front-end? → A: Hide `<nav>` element entirely (do not render navigation section at all)
+
+### Session 2025-11-03
+
+- Q: Should the navigation menu implement caching to reduce database load? → A: Yes - use database cache (1-hour TTL, invalidate on menu save)
+- Q: Should the navigation menu implement error logging and monitoring? → A: Yes - Django logging (ERROR level to console + file)
+- Q: Should the system enforce a maximum total number of menu items? → A: Soft limit (100 items total) - show admin warning when approaching limit, allow override for edge cases
 
 ## Design Philosophy
 
@@ -140,12 +146,29 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - What happens if JavaScript is disabled? (Navigation remains functional using `<details>`/`<summary>` elements for progressive enhancement)
 - How does dark mode affect menu styling? (Menu uses DaisyUI theme-aware classes like `bg-base-100` that automatically adapt to theme)
 - How is the current page indicated in the menu? (Active menu item receives `aria-current="page"` attribute and visual styling via CSS)
-- What happens on mobile devices with small screens? (Navigation collapses to hamburger menu at < 1024px breakpoint using DaisyUI responsive classes)
+- What happens on mobile/tablet breakpoints? (Navigation collapses to hamburger menu at mobile/tablet breakpoints `< lg` / < 1024px using DaisyUI responsive classes)
 - How are touch targets sized for mobile accessibility? (All interactive elements have minimum 44x44 pixel touch targets per WCAG guidelines)
 - How do screen readers announce dropdown menus? (Dropdown triggers use `aria-haspopup="true"` and submenus have `aria-labelledby` for proper context)
 - What if a color-blind user can't distinguish hover states? (Hover/focus states use multiple visual indicators: underline, background color, and border changes - not color alone)
 
 ## Requirements *(mandatory)*
+
+### Responsive Breakpoints
+
+The navigation menu system uses standard Tailwind CSS / DaisyUI breakpoints for responsive behavior:
+
+| Breakpoint | Name           | Screen Width   | Typical Devices                        | Navigation Behavior                       |
+| ---------- | -------------- | -------------- | -------------------------------------- | ----------------------------------------- |
+| `sm`       | Mobile (Small) | < 640px        | Phones (portrait)                      | Hamburger menu (drawer)                   |
+| `md`       | Tablet         | 640px - 1023px | Phones (landscape), small tablets      | Hamburger menu (drawer)                   |
+| `lg`       | Laptop/Desktop | ≥ 1024px       | Tablets (landscape), laptops, desktops | Full horizontal menu with hover dropdowns |
+| `xl`       | Wide Desktop   | ≥ 1280px       | Large desktops                         | Full horizontal menu with hover dropdowns |
+| `2xl`      | Ultra-wide     | ≥ 1536px       | Ultra-wide monitors                    | Full horizontal menu with hover dropdowns |
+
+**Breakpoint Usage**:
+
+- **Mobile/Tablet (`< lg`)**: Hamburger menu with drawer component, click/tap-only dropdowns
+- **Desktop (`≥ lg`)**: Full horizontal navigation with hover-enabled dropdowns (also click/tap for accessibility)
 
 ### Functional Requirements
 
@@ -176,6 +199,17 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - **FR-022a**: System SHOULD optionally prevent deletion of pages that are referenced in the navigation menu and display a warning message listing where the page is used
 - **FR-023**: System MUST allow administrators to delete menu items
 - **FR-024**: System MUST save menu changes only when administrator explicitly saves
+- **FR-024-Cache**: System MUST implement caching and error logging for navigation menus:
+  - a. Cache rendered menus using Django's database cache backend with 1-hour TTL to reduce database queries
+  - b. Invalidate cached menus immediately when menu settings are saved or deleted
+  - c. Generate separate cache keys per site and locale (format: `navigation_menu_{site_pk}_{language_code}`)
+  - d. Log navigation-related errors (cache failures, invalid page references, locale resolution errors) using Django's logging framework at ERROR level
+  - e. Log to console in development and to file in production environments
+  - f. Gracefully degrade when cache is unavailable (fall back to direct database queries and log the cache failure)
+- **FR-024-Limits**: System MUST implement soft limits for menu size:
+  - g. Display a warning in the admin interface when total menu items (including all nested items) approaches 100 items
+  - h. Allow administrators to save menus exceeding 100 items (soft limit with warning, not a hard block)
+  - i. Count all menu items recursively (top-level items + dropdown items + nested items) when calculating total for the warning threshold
 
 #### Frontend Rendering & Accessibility (WCAG 2.1 AA Compliance)
 
@@ -192,14 +226,14 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
   - Enter/Space to activate links or toggle dropdowns
   - Escape to close open dropdowns
   - Arrow keys (down/up) to navigate within dropdowns
-- **FR-032a**: Dropdown menus MUST open on hover for desktop devices (≥1024px screen width)
+- **FR-032a**: Dropdown menus MUST open on hover for desktop breakpoint (`lg+` / ≥1024px screen width)
 - **FR-032b**: Dropdown menus MUST also support click/tap to open on all devices (including desktop) for accessibility
-- **FR-032c**: Dropdown menus on mobile devices (<1024px) MUST use click/tap only (no hover trigger)
+- **FR-032c**: Dropdown menus on mobile/tablet breakpoints (`< lg` / <1024px) MUST use click/tap only (no hover trigger)
 - **FR-033**: Focus states MUST be clearly visible with sufficient contrast (3:1 ratio minimum)
 - **FR-034**: Active/current page MUST be indicated with `aria-current="page"` attribute
 - **FR-035**: Navigation MUST render using DaisyUI theme-aware classes for automatic dark/light mode support
 - **FR-036**: Dropdown menus MUST use theme-aware background colors (e.g., `bg-base-100` instead of hardcoded `bg-white`)
-- **FR-037**: Navigation MUST be responsive with mobile-friendly hamburger menu for screens < 1024px (lg breakpoint)
+- **FR-037**: Navigation MUST be responsive with mobile-friendly hamburger menu at mobile/tablet breakpoints (`< lg` / < 1024px)
 - **FR-037a**: Mobile hamburger menu MUST use DaisyUI drawer component that slides in from the left side
 - **FR-037b**: Mobile drawer MUST include a visible close button (× icon) in addition to Escape key support
 - **FR-037c**: Mobile drawer MUST overlay the main content with semi-transparent backdrop when open
@@ -208,10 +242,8 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - **FR-038**: Mobile hamburger menu MUST use accessible button with `aria-expanded` state
 - **FR-039**: Navigation MUST provide skip link for keyboard users to bypass menu and jump to main content
 - **FR-040**: Dropdown menus SHOULD use `<details>`/`<summary>` elements for progressive enhancement (works without JavaScript)
-- **FR-041**: Navigation templates MUST be structured as reusable components:
-  - `navigation.html` - Main navigation wrapper
-  - `navigation_item.html` - Simple link rendering
-  - `navigation_dropdown.html` - Dropdown menu rendering
+- **FR-041**: Navigation templates MUST be structured as a single consolidated template:
+  - `navigation.html` - Complete navigation template with mobile drawer, desktop menubar, and dropdown rendering
 - **FR-042**: Navigation component MUST be included in `base.html` template for site-wide availability
 - **FR-043**: Menu links MUST have minimum touch target size of 44x44 pixels for mobile accessibility
 - **FR-044**: Color contrast MUST meet WCAG AA standards (4.5:1 for normal text, 3:1 for large text)
@@ -233,10 +265,8 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 
 ### Frontend Template Structure
 
-- **navigation.html**: Main navigation component template that renders the complete menu structure with ARIA semantics, responsive layout, and theme support. Included in `base.html` for site-wide availability.
-- **navigation_item.html**: Reusable template block for rendering simple menu links (both top-level and within dropdowns) with proper ARIA roles and active page indication.
-- **navigation_dropdown.html**: Template block for rendering dropdown menus with `<details>`/`<summary>` elements, ARIA properties (`aria-haspopup`, `aria-controls`, `aria-labelledby`), and nested child items.
-- **Skip Link**: Visually hidden anchor link positioned as first focusable element, allowing keyboard users to bypass navigation and jump to main content (WCAG 2.1 requirement).
+- **navigation.html**: Complete navigation component template that renders the entire menu structure including mobile drawer, desktop menubar, and dropdown menus with ARIA semantics, responsive layout, DaisyUI components, and theme support. Included in `base.html` for site-wide availability.
+- **Skip Link**: Visually hidden anchor link positioned as first focusable element in `base.html`, allowing keyboard users to bypass navigation and jump to main content (WCAG 2.1 requirement).
 - **Theme Classes**: DaisyUI theme-aware utility classes (e.g., `bg-base-100`, `text-base-content`) that automatically adapt to active theme (light/dark) without hardcoded colors.
 
 ## Success Criteria *(mandatory)*
@@ -261,4 +291,4 @@ As a visitor using assistive technology (screen reader, keyboard-only, or mobile
 - **SC-016**: All interactive menu elements meet 4.5:1 color contrast ratio for text and 3:1 for interactive components
 - **SC-017**: Navigation remains functional with JavaScript disabled (dropdowns work via `<details>` element)
 - **SC-018**: Users can activate skip link to bypass navigation and jump directly to main content using keyboard
-- **SC-019**: Dropdown menus automatically position themselves to avoid viewport overflow (tested at viewport widths of 320px, 768px, 1024px, and 1920px)
+- **SC-019**: Dropdown menus automatically position themselves to avoid viewport overflow (tested at breakpoints: mobile 320px/`sm`, tablet 640px/`md`, laptop 1024px/`lg`, desktop 1280px/`xl`, wide 1920px/`2xl`)

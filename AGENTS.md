@@ -51,6 +51,13 @@ class HeadingBlock(blocks.StructBlock):
 
 **Security**: Use `EmbedBlock` (oEmbed) for embedded content, NEVER `RawHTMLBlock` (XSS risk).
 
+**Navigation Menu Pattern**: See `src/navigation/blocks.py` for nested block structure that enforces 2-level maximum:
+- `TopLevelMenuBlock` (StreamBlock) contains page_link, external_link, OR dropdown
+- `DropdownMenuBlock` (StructBlock) contains title and items (MenuItemBlock)
+- `MenuItemBlock` (StreamBlock) contains ONLY page_link and external_link (no nested dropdowns)
+
+This structural approach prevents 3+ level nesting at the schema level.
+
 ### 4. Translation & Locale Management
 
 - Translation UI comes from `wagtail.contrib.simple_translation` (already installed)
@@ -62,22 +69,42 @@ class HeadingBlock(blocks.StructBlock):
 
 ## Development Workflow
 
-### Essential Commands (from `src/` directory)
+### Essential Commands
+
+**IMPORTANT**: This project uses `uv` for package management. When running Python commands in terminals (especially from AI assistants or automated tools), the virtual environment may not be automatically activated. **Always prefix Python commands with `uv run`** to ensure the correct environment is used:
 
 ```bash
-# Package management (from project root)
+# ✅ CORRECT - Use uv run for all Python commands
+uv run python manage.py test
+uv run python manage.py migrate
+uv run python manage.py runserver
+
+# ❌ WRONG - May fail if virtual environment isn't activated
+python manage.py test
+```
+
+#### Package Management (from project root)
+
+```bash
 uv sync                    # Install all deps (creates .venv/)
 uv add package-name        # Add runtime dependency
 uv add --dev package-name  # Add dev dependency
+```
 
-# Django (from src/ directory)
+#### Django Commands (from src/ directory)
+
+```bash
 cd src
-python manage.py migrate
-python manage.py test                    # Run all tests (64 total)
-python manage.py test locales.tests      # Run specific app tests
-python manage.py createsuperuser         # One-time setup
+uv run python manage.py migrate
+uv run python manage.py test                    # Run all tests
+uv run python manage.py test navigation         # Run specific app tests
+uv run python manage.py createsuperuser         # One-time setup
+uv run python manage.py runserver               # Development server
+```
 
-# Code quality (from project root)
+#### Code Quality (from project root)
+
+```bash
 uv run pre-commit install              # One-time setup
 uv run pre-commit run --all-files      # Manual run
 uv run ruff check --fix .              # Lint with auto-fix
@@ -183,8 +210,9 @@ from core.constants import DEFAULT_LANGUAGE_CODE, DEFAULT_LANGUAGES
 - **curlylint** - Template linting
 
 ### Migration Best Practices
+
 1. Test migrations are auto-generated
-2.  based on model changes
+2. based on model changes
 3. Run `python manage.py makemigrations` after model changes
 4. All StreamField changes require migrations (block structure changes)
 5. Check migration files into version control
