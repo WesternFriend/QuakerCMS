@@ -22,16 +22,19 @@ cd QuakerCMS
 ### 2. Install uv (if not already installed)
 
 #### macOS/Linux
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 #### Windows
+
 ```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
 Alternatively, install via pip:
+
 ```bash
 pip install uv
 ```
@@ -45,6 +48,7 @@ uv sync
 ```
 
 This command will:
+
 - Create a virtual environment in `.venv/`
 - Install all project dependencies
 - Install development dependencies (like `ruff` for linting) automatically
@@ -52,21 +56,25 @@ This command will:
 ### 4. Activate the Virtual Environment
 
 #### macOS/Linux
+
 ```bash
 source .venv/bin/activate
 ```
 
 #### Windows (PowerShell)
+
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
 #### Windows (Command Prompt)
+
 ```cmd
 .venv\Scripts\activate.bat
 ```
 
 ### 5. Navigate to the Django Project Directory
+
 
 ```bash
 cd src
@@ -123,6 +131,7 @@ python manage.py scaffold_navbar_content
 ```
 
 This command creates:
+
 - **About** page (top-level)
 - **Programs** page with a dropdown containing:
   - Programs overview
@@ -176,12 +185,14 @@ QuakerCMS requires **two development servers** running simultaneously:
 #### Option A: Two Terminal Windows (Recommended)
 
 **Terminal 1 - Django Server:**
+
 ```bash
 cd src
 python manage.py runserver
 ```
 
 **Terminal 2 - Tailwind CSS Watcher:**
+
 ```bash
 cd src/theme/static_src
 npm run dev
