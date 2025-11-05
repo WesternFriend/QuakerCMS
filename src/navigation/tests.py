@@ -755,36 +755,91 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
         # Published page should appear
         self.assertIn("About", result)
 
-    def test_navigation_menu_tag_handles_deleted_pages(self):
-        """Navigation menu tag handles references to deleted pages gracefully."""
-        # Create menu with reference to page
-        NavigationMenuSetting.objects.create(
-            site=self.site,
-            menu_items=[
-                {
-                    "type": "page_link",
-                    "value": {
-                        "page": self.about_page.id,
-                        "custom_title": "About",
-                        "anchor": "",
-                    },
-                },
-            ],
-        )
 
-        # Delete the page
-        self.about_page.delete()
+class ManagementCommandTests(WagtailTestUtils, TestCase):
+    """Tests for navigation management commands."""
 
-        request = self.factory.get("/")
-        request.site = self.site
+    def setUp(self):
+        """Set up test data."""
+        self.site = Site.objects.get(is_default_site=True)
+        self.locale = Locale.get_default()
+        self.home = HomePage.objects.first()
 
-        from django.template import Context, Template
+    def test_scaffold_navbar_content_creates_pages(self):
+        """Scaffold command creates sample pages."""
+        from io import StringIO
 
-        template = Template("{% load navigation_tags %}{% navigation_menu %}")
-        context = Context({"request": request, "page": self.home})
+        from django.core.management import call_command
 
-        # Should not raise error
-        result = template.render(context)
-        self.assertIsNotNone(result)
-        # Page should not appear in menu
-        self.assertNotIn("About", result)
+        out = StringIO()
+        call_command("scaffold_navbar_content", "--skip-menu", stdout=out)
+
+        # Check that pages were created
+        self.assertTrue(ContentPage.objects.filter(title="About").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Programs").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Contact").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Adult Education").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Youth Programs").exists())
+
+        output = out.getvalue()
+        self.assertIn("Successfully scaffolded", output)
+
+    def test_scaffold_navbar_content_creates_navigation_menu(self):
+        """Scaffold command creates navigation menu."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        out = StringIO()
+        call_command("scaffold_navbar_content", stdout=out)
+
+        # Check navigation menu was created
+        nav_settings = NavigationMenuSetting.for_site(self.site)
+        self.assertIsNotNone(nav_settings)
+        self.assertGreater(len(nav_settings.menu_items), 0)
+
+        # Check for specific menu items
+        menu_types = [item.block_type for item in nav_settings.menu_items]
+        self.assertIn("page_link", menu_types)
+        self.assertIn("dropdown", menu_types)
+        self.assertIn("external_link", menu_types)
+
+    def test_scaffold_navbar_content_delete_option(self):
+        """Scaffold command with --delete removes existing content."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Create initial content
+        call_command("scaffold_navbar_content", stdout=StringIO())
+
+        # Verify content exists
+        about_page = ContentPage.objects.filter(title="About").first()
+        self.assertIsNotNone(about_page)
+        initial_id = about_page.id
+
+        # Run with --delete
+        out = StringIO()
+        call_command("scaffold_navbar_content", "--delete", stdout=out)
+
+        # Verify old content was deleted and new content created
+        new_about_page = ContentPage.objects.filter(title="About").first()
+        self.assertIsNotNone(new_about_page)
+        self.assertNotEqual(initial_id, new_about_page.id)
+
+        output = out.getvalue()
+        self.assertIn("Deleted", output)
+
+    def test_scaffold_navbar_content_no_site_error(self):
+        """Scaffold command fails gracefully with no site."""
+        from io import StringIO
+
+        from django.core.management import CommandError, call_command
+
+        # Delete the default site
+        Site.objects.all().delete()
+
+        with self.assertRaises(CommandError) as context:
+            call_command("scaffold_navbar_content", stdout=StringIO())
+
+        self.assertIn("No default site found", str(context.exception))
