@@ -10,5 +10,16 @@
         ".specify/scripts/bash/": true,
         ".specify/scripts/powershell/": true
     },
-    "terminal.integrated.cwd": "${workspaceFolder}/src"
+    "terminal.integrated.cwd": "${workspaceFolder}/src",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "python.testing.unittestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test*.py"
+    ],
+    "python.testing.cwd": "${workspaceFolder}/src"
 }
