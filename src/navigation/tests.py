@@ -707,6 +707,352 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
         self.assertIn("About", result)
 
 
+class TranslationTests(WagtailTestUtils, TestCase):
+    """Tests for navigation menu translation and multi-lingual support."""
+
+    def setUp(self):
+        """Set up test data with multiple locales."""
+        self.site = Site.objects.get(is_default_site=True)
+        self.locale_en = Locale.get_default()
+        self.locale_es, _ = Locale.objects.get_or_create(language_code="es")
+        self.locale_fr, _ = Locale.objects.get_or_create(language_code="fr")
+
+        # Get the English home page and create translations
+        self.home_en = HomePage.objects.first()
+
+        # Create Spanish home page translation
+        self.home_es = self.home_en.copy_for_translation(self.locale_es)
+        self.home_es.title = "Inicio"
+        self.home_es.save_revision().publish()
+
+        # Create French home page translation
+        self.home_fr = self.home_en.copy_for_translation(self.locale_fr)
+        self.home_fr.title = "Accueil"
+        self.home_fr.save_revision().publish()
+
+        # Create an English page
+        self.page_en = ContentPage(
+            title="About Us",
+            slug="about-us",
+            locale=self.locale_en,
+            body=[
+                {
+                    "type": "rich_text",
+                    "value": "<p>Welcome to our community.</p>",
+                },
+            ],
+        )
+        self.home_en.add_child(instance=self.page_en)
+        self.page_en.save_revision().publish()
+
+        # Create Spanish translation
+        self.page_es = self.page_en.copy_for_translation(self.locale_es)
+        self.page_es.title = "Sobre Nosotros"
+        self.page_es.body = [
+            {
+                "type": "rich_text",
+                "value": "<p>Bienvenido a nuestra comunidad.</p>",
+            },
+        ]
+        self.page_es.save_revision().publish()
+
+        # Create French translation
+        self.page_fr = self.page_en.copy_for_translation(self.locale_fr)
+        self.page_fr.title = "À Propos de Nous"
+        self.page_fr.body = [
+            {
+                "type": "rich_text",
+                "value": "<p>Bienvenue dans notre communauté.</p>",
+            },
+        ]
+        self.page_fr.save_revision().publish()
+
+        # Create navigation menu with the English page
+        self.nav_settings = NavigationMenuSetting.objects.create(
+            site=self.site,
+            menu_items=[
+                {
+                    "type": "page_link",
+                    "value": {
+                        "page": self.page_en.id,
+                        "custom_title": "",
+                        "anchor": "",
+                    },
+                },
+            ],
+        )
+
+    def test_menu_displays_translated_page_in_current_locale(self):
+        """Menu items display pages in current locale."""
+        # Test with Spanish locale
+        with self.activate_locale(self.locale_es):
+            item = self.nav_settings.menu_items[0]
+            result = process_menu_item(
+                item,
+                self.locale_es,
+                self.locale_en,
+            )
+
+            self.assertIsNotNone(result)
+            self.assertEqual(result["type"], "page_link")
+            self.assertEqual(result["title"], "Sobre Nosotros")
+            self.assertEqual(result["page"].id, self.page_es.id)
+            self.assertEqual(result["page"].locale, self.locale_es)
+
+    def test_menu_displays_translated_page_in_french_locale(self):
+        """Menu items display pages in French locale."""
+        # Test with French locale
+        with self.activate_locale(self.locale_fr):
+            item = self.nav_settings.menu_items[0]
+            result = process_menu_item(
+                item,
+                self.locale_fr,
+                self.locale_en,
+            )
+
+            self.assertIsNotNone(result)
+            self.assertEqual(result["type"], "page_link")
+            self.assertEqual(result["title"], "À Propos de Nous")
+            self.assertEqual(result["page"].id, self.page_fr.id)
+            self.assertEqual(result["page"].locale, self.locale_fr)
+
+    def test_menu_falls_back_to_default_locale(self):
+        """Menu falls back to default locale when translation unavailable."""
+        # Create a new locale without translation
+        locale_de, _ = Locale.objects.get_or_create(language_code="de")
+
+        # Try to get menu item in German (no translation exists)
+        item = self.nav_settings.menu_items[0]
+        result = process_menu_item(
+            item,
+            locale_de,
+            self.locale_en,
+        )
+
+        # Should fall back to English
+        self.assertIsNotNone(result)
+        self.assertEqual(result["type"], "page_link")
+        self.assertEqual(result["title"], "About Us")
+        self.assertEqual(result["page"].id, self.page_en.id)
+        self.assertEqual(result["page"].locale, self.locale_en)
+
+    def test_dropdown_items_respect_locale(self):
+        """Dropdown menu items are translated correctly."""
+        # Create a parent page in English
+        programs_en = ContentPage(
+            title="Programs",
+            slug="programs",
+            locale=self.locale_en,
+        )
+        self.home_en.add_child(instance=programs_en)
+        programs_en.save_revision().publish()
+
+        # Create Spanish translation
+        programs_es = programs_en.copy_for_translation(self.locale_es)
+        programs_es.title = "Programas"
+        programs_es.save_revision().publish()
+
+        # Update navigation with dropdown
+        self.nav_settings.menu_items = [
+            {
+                "type": "dropdown",
+                "value": {
+                    "title": "Resources",
+                    "items": [
+                        {
+                            "type": "page_link",
+                            "value": {
+                                "page": self.page_en.id,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
+                        },
+                        {
+                            "type": "page_link",
+                            "value": {
+                                "page": programs_en.id,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
+                        },
+                    ],
+                },
+            },
+        ]
+        self.nav_settings.save()
+
+        # Test with Spanish locale
+        item = self.nav_settings.menu_items[0]
+        result = process_menu_item(
+            item,
+            self.locale_es,
+            self.locale_en,
+        )
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result["type"], "dropdown")
+        self.assertEqual(len(result["items"]), 2)
+
+        # Check first child is Spanish translation
+        self.assertEqual(result["items"][0]["title"], "Sobre Nosotros")
+        self.assertEqual(result["items"][0]["page"].locale, self.locale_es)
+
+        # Check second child is Spanish translation
+        self.assertEqual(result["items"][1]["title"], "Programas")
+        self.assertEqual(result["items"][1]["page"].locale, self.locale_es)
+
+    def test_unpublished_translation_not_shown(self):
+        """Unpublished translations are not shown in menu."""
+        # Create a draft Spanish page (unpublished)
+        draft_page_en = ContentPage(
+            title="Draft Page",
+            slug="draft-page",
+            locale=self.locale_en,
+        )
+        self.home_en.add_child(instance=draft_page_en)
+        draft_page_en.save_revision().publish()
+
+        # Create Spanish translation but don't publish it
+        draft_page_es = draft_page_en.copy_for_translation(self.locale_es)
+        draft_page_es.title = "Página de Borrador"
+        draft_page_es.live = False
+        draft_page_es.save_revision()  # Save but don't publish
+
+        # Update navigation with this page
+        self.nav_settings.menu_items = [
+            {
+                "type": "page_link",
+                "value": {
+                    "page": draft_page_en.id,
+                    "custom_title": "",
+                    "anchor": "",
+                },
+            },
+        ]
+        self.nav_settings.save()
+
+        # Try to get menu item in Spanish
+        item = self.nav_settings.menu_items[0]
+        result = process_menu_item(
+            item,
+            self.locale_es,
+            self.locale_en,
+        )
+
+        # Should return None since the Spanish translation exists but is unpublished
+        # This prevents showing stale content in the wrong language
+        self.assertIsNone(result)
+
+    def test_custom_title_used_regardless_of_locale(self):
+        """Custom title is used instead of translated page title."""
+        # Update navigation with custom title
+        self.nav_settings.menu_items = [
+            {
+                "type": "page_link",
+                "value": {
+                    "page": self.page_en.id,
+                    "custom_title": "Custom Title",
+                    "anchor": "",
+                },
+            },
+        ]
+        self.nav_settings.save()
+
+        # Test with Spanish locale
+        item = self.nav_settings.menu_items[0]
+        result = process_menu_item(
+            item,
+            self.locale_es,
+            self.locale_en,
+        )
+
+        # Should use custom title, not translated title
+        self.assertEqual(result["title"], "Custom Title")
+        # But page should still be Spanish
+        self.assertEqual(result["page"].locale, self.locale_es)
+
+    def test_navigation_menu_tag_respects_active_locale(self):
+        """Navigation menu template tag uses active locale."""
+        from django.template import Context, Template
+
+        factory = RequestFactory()
+        request = factory.get("/")
+        request.site = self.site
+
+        # Activate Spanish locale
+        with self.activate_locale(self.locale_es):
+            template = Template("{% load navigation_tags %}{% navigation_menu %}")
+            context = Context({"request": request, "page": self.home_en})
+
+            result = template.render(context)
+
+            # Should show Spanish title
+            self.assertIn("Sobre Nosotros", result)
+            self.assertNotIn("About Us", result)
+
+    def test_mixed_locale_dropdown_with_fallback(self):
+        """Dropdown handles mix of available and unavailable translations."""
+        # Create another English page without Spanish translation
+        no_translation_page = ContentPage(
+            title="English Only",
+            slug="english-only",
+            locale=self.locale_en,
+        )
+        self.home_en.add_child(instance=no_translation_page)
+        no_translation_page.save_revision().publish()
+
+        # Create dropdown with both pages
+        self.nav_settings.menu_items = [
+            {
+                "type": "dropdown",
+                "value": {
+                    "title": "Mixed",
+                    "items": [
+                        {
+                            "type": "page_link",
+                            "value": {
+                                "page": self.page_en.id,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
+                        },
+                        {
+                            "type": "page_link",
+                            "value": {
+                                "page": no_translation_page.id,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
+                        },
+                    ],
+                },
+            },
+        ]
+        self.nav_settings.save()
+
+        # Test with Spanish locale
+        item = self.nav_settings.menu_items[0]
+        result = process_menu_item(
+            item,
+            self.locale_es,
+            self.locale_en,
+        )
+
+        self.assertEqual(len(result["items"]), 2)
+        # First item should be Spanish
+        self.assertEqual(result["items"][0]["title"], "Sobre Nosotros")
+        self.assertEqual(result["items"][0]["page"].locale, self.locale_es)
+        # Second item should fall back to English
+        self.assertEqual(result["items"][1]["title"], "English Only")
+        self.assertEqual(result["items"][1]["page"].locale, self.locale_en)
+
+    def activate_locale(self, locale):
+        """Context manager to activate a specific locale."""
+        from unittest.mock import patch
+
+        return patch("wagtail.models.Locale.get_active", return_value=locale)
+
+
 class ManagementCommandTests(WagtailTestUtils, TestCase):
     """Tests for navigation management commands."""
 
