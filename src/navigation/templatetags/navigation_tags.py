@@ -137,6 +137,10 @@ def process_menu_item(
                     # use the original page
                     localized_page = page
 
+        # Ensure the localized page is live before showing in menu
+        if not localized_page.live:
+            return None
+
         anchor = item.value.get("anchor", "")
         url = localized_page.url
         if anchor:
