@@ -247,7 +247,19 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
         self.factory = RequestFactory()
         self.site = Site.objects.get(is_default_site=True)
         self.default_locale = Locale.get_default()
+
+        # Ensure a HomePage exists for tests
         self.home = HomePage.objects.first()
+        if not self.home:
+            # Get the root page
+            root = Site.objects.get(is_default_site=True).root_page
+            self.home = HomePage(
+                title="Test Home Page",
+                slug="home",
+                locale=self.default_locale,
+            )
+            root.add_child(instance=self.home)
+            self.home.save_revision().publish()
 
         # Create a content page for testing
         self.about_page = ContentPage(
@@ -1060,7 +1072,19 @@ class ManagementCommandTests(WagtailTestUtils, TestCase):
         """Set up test data."""
         self.site = Site.objects.get(is_default_site=True)
         self.locale = Locale.get_default()
+
+        # Ensure a HomePage exists for tests
         self.home = HomePage.objects.first()
+        if not self.home:
+            # Get the root page
+            root = Site.objects.get(is_default_site=True).root_page
+            self.home = HomePage(
+                title="Test Home Page",
+                slug="home",
+                locale=self.locale,
+            )
+            root.add_child(instance=self.home)
+            self.home.save_revision().publish()
 
     def test_scaffold_navbar_content_creates_pages(self):
         """Scaffold command creates sample pages."""
