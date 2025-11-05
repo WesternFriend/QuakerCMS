@@ -830,6 +830,121 @@ class ManagementCommandTests(WagtailTestUtils, TestCase):
         output = out.getvalue()
         self.assertIn("Deleted", output)
 
+    def test_scaffold_navbar_content_delete_only_scaffolded_pages(self):
+        """Scaffold command with --delete only removes scaffolded pages, not all pages."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Create a non-scaffolded page that should NOT be deleted
+        user_page = ContentPage(
+            title="User Created Page",
+            slug="user-page",
+            locale=self.locale,
+            body=[
+                {
+                    "type": "rich_text",
+                    "value": "<p>This is a user-created page.</p>",
+                },
+            ],
+        )
+        self.home.add_child(instance=user_page)
+        user_page.save_revision().publish()
+        user_page_id = user_page.id
+
+        # Create scaffolded content
+        call_command("scaffold_navbar_content", stdout=StringIO())
+
+        # Verify both scaffolded and user pages exist
+        self.assertTrue(ContentPage.objects.filter(title="About").exists())
+        self.assertTrue(ContentPage.objects.filter(title="User Created Page").exists())
+
+        # Run with --delete
+        out = StringIO()
+        call_command("scaffold_navbar_content", "--delete", stdout=out)
+
+        # Verify user page still exists (not deleted)
+        user_page_after = ContentPage.objects.filter(id=user_page_id).first()
+        self.assertIsNotNone(
+            user_page_after,
+            "User-created page should NOT be deleted by scaffold command",
+        )
+        self.assertEqual(user_page_after.title, "User Created Page")
+
+        # Verify scaffolded pages were recreated (different IDs)
+        new_about_page = ContentPage.objects.filter(title="About").first()
+        self.assertIsNotNone(new_about_page)
+
+        output = out.getvalue()
+        self.assertIn("Deleted", output)
+
+    def test_scaffold_navbar_content_delete_removes_descendants(self):
+        """Scaffold command with --delete removes scaffolded pages and their descendants."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Create scaffolded content
+        call_command("scaffold_navbar_content", stdout=StringIO())
+
+        # Verify Programs page and its children exist
+        programs_page = ContentPage.objects.filter(title="Programs").first()
+        self.assertIsNotNone(programs_page)
+        self.assertTrue(ContentPage.objects.filter(title="Adult Education").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Youth Programs").exists())
+
+        programs_page_id = programs_page.id
+        adult_ed_page = ContentPage.objects.filter(title="Adult Education").first()
+        adult_ed_id = adult_ed_page.id
+
+        # Run with --delete
+        out = StringIO()
+        call_command("scaffold_navbar_content", "--delete", stdout=out)
+
+        # Verify old Programs page and its descendants were deleted
+        self.assertFalse(
+            ContentPage.objects.filter(id=programs_page_id).exists(),
+            "Old Programs page should be deleted",
+        )
+        self.assertFalse(
+            ContentPage.objects.filter(id=adult_ed_id).exists(),
+            "Descendants of Programs page should be deleted",
+        )
+
+        # Verify new Programs page and children were created
+        new_programs_page = ContentPage.objects.filter(title="Programs").first()
+        self.assertIsNotNone(new_programs_page)
+        self.assertNotEqual(new_programs_page.id, programs_page_id)
+        self.assertTrue(ContentPage.objects.filter(title="Adult Education").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Youth Programs").exists())
+
+        output = out.getvalue()
+        self.assertIn("Deleted", output)
+
+    def test_scaffold_navbar_content_delete_with_no_existing_content(self):
+        """Scaffold command with --delete works when no scaffolded pages exist."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # Ensure no scaffolded pages exist
+        ContentPage.objects.filter(
+            slug__in=["dev_about", "dev_programs", "dev_contact"],
+        ).delete()
+
+        # Run with --delete (should not error)
+        out = StringIO()
+        call_command("scaffold_navbar_content", "--delete", stdout=out)
+
+        # Verify pages were created
+        self.assertTrue(ContentPage.objects.filter(title="About").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Programs").exists())
+        self.assertTrue(ContentPage.objects.filter(title="Contact").exists())
+
+        output = out.getvalue()
+        # Should not say "Deleted" since nothing was deleted
+        self.assertNotIn("Deleted", output)
+
     def test_scaffold_navbar_content_no_site_error(self):
         """Scaffold command fails gracefully with no site."""
         from io import StringIO

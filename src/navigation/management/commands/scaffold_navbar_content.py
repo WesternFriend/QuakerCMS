@@ -15,7 +15,7 @@ from navigation.models import NavigationMenuSetting
 class Command(BaseCommand):
     """Scaffold test navigation content with top-level and dropdown menu items."""
 
-    help = "Creates sample pages and navigation menu for testing"
+    help = "Creates sample pages (with dev_ prefix) and navigation menu for testing"
 
     def add_arguments(self, parser):
         """Add command arguments."""
@@ -82,24 +82,36 @@ class Command(BaseCommand):
         """Delete previously scaffolded content."""
         self.stdout.write("Deleting existing scaffolded content...")
 
-        # Delete ContentPage children (but not other page types)
-        deleted_count = 0
-        content_pages = ContentPage.objects.filter(
-            depth=home_page.depth + 1,
-            path__startswith=home_page.path,
-            live=True,
+        # Define the slugs of pages created by this scaffold command
+        # Prefixed with dev_ to avoid accidental deletion of production content
+        SCAFFOLDED_SLUGS = (
+            "dev_about",
+            "dev_programs",
+            "dev_contact",
         )
 
-        for page in content_pages:
-            # Also delete children of this page
-            for child in page.get_descendants():
-                child.delete()
-            page.delete()
+        # Query for only the scaffolded pages directly under home page
+        deleted_count = 0
+        scaffolded_pages = ContentPage.objects.filter(
+            depth=home_page.depth + 1,
+            path__startswith=home_page.path,
+            slug__in=SCAFFOLDED_SLUGS,
+        )
+
+        for page in scaffolded_pages:
+            # Delete the page and all its descendants (e.g., adult-education, youth-programs)
+            # get_descendants() returns all descendant pages in the tree
+            descendant_count = page.get_descendants().count()
+            page.delete()  # This will cascade delete all descendants
             deleted_count += 1
+            if descendant_count > 0:
+                self.stdout.write(
+                    f"  Deleted '{page.title}' and {descendant_count} descendant(s)",
+                )
 
         if deleted_count > 0:
             self.stdout.write(
-                self.style.WARNING(f"Deleted {deleted_count} existing pages"),
+                self.style.WARNING(f"Deleted {deleted_count} scaffolded page(s)"),
             )
 
             # Fix the page tree after deletion to ensure consistency
@@ -118,7 +130,7 @@ class Command(BaseCommand):
         # Top-level pages
         about_page = ContentPage(
             title="About",
-            slug="about",
+            slug="dev_about",
             locale=locale,
             body=[
                 {
@@ -137,7 +149,7 @@ class Command(BaseCommand):
 
         programs_page = ContentPage(
             title="Programs",
-            slug="programs",
+            slug="dev_programs",
             locale=locale,
             body=[
                 {
@@ -157,7 +169,7 @@ class Command(BaseCommand):
         # Sub-pages under Programs (for dropdown testing)
         adult_education = ContentPage(
             title="Adult Education",
-            slug="adult-education",
+            slug="dev_adult-education",
             locale=locale,
             body=[
                 {
@@ -176,7 +188,7 @@ class Command(BaseCommand):
 
         youth_programs = ContentPage(
             title="Youth Programs",
-            slug="youth-programs",
+            slug="dev_youth-programs",
             locale=locale,
             body=[
                 {
@@ -196,7 +208,7 @@ class Command(BaseCommand):
         # Additional top-level page
         contact_page = ContentPage(
             title="Contact",
-            slug="contact",
+            slug="dev_contact",
             locale=locale,
             body=[
                 {
