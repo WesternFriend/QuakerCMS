@@ -13,7 +13,7 @@
     {# - Different JavaScript requirements: edge detection vs native HTML5 behavior #}
     {# - Different WCAG patterns for desktop vs mobile/touch navigation #}
     {# While the data iteration looks similar, the rendering logic is fundamentally different. #}
-      <nav class="navbar bg-base-100 hidden lg:flex" aria-label="Main navigation">
+      <nav class="navbar bg-gray-50 shadow hidden lg:flex" aria-label="Main navigation">
         <div class="flex-1">
           <ul class="menu menu-horizontal" role="menubar">
             {% for item in menu_items %}
@@ -71,7 +71,7 @@
       </nav>
 
     {# Mobile Hamburger Button #}
-      <div class="navbar bg-base-100 lg:hidden">
+      <div class="navbar bg-gray-50 shadow lg:hidden">
         <label
           for="nav-drawer"
           class="btn btn-square btn-ghost"
