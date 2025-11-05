@@ -258,6 +258,16 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
         self.home.add_child(instance=self.about_page)
         self.about_page.save_revision().publish()
 
+    def _create_mock_block(self, block_type, value):
+        """Helper to create mock block values for testing."""
+
+        class MockBlockValue:
+            def __init__(self, bt, val):
+                self.block_type = bt
+                self.value = val
+
+        return MockBlockValue(block_type, value)
+
     def test_process_menu_item_page_link(self):
         """Process page link returns correct structure."""
         value = {
@@ -266,13 +276,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "top",
         }
 
-        class MockBlockValue:
-            block_type = "page_link"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("page_link", value)
 
         result = process_menu_item(
             item,
@@ -294,13 +298,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "",
         }
 
-        class MockBlockValue:
-            block_type = "page_link"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("page_link", value)
 
         result = process_menu_item(
             item,
@@ -319,13 +317,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "section",
         }
 
-        class MockBlockValue:
-            block_type = "external_link"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("external_link", value)
 
         result = process_menu_item(
             item,
@@ -346,13 +338,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "",
         }
 
-        class MockBlockValue:
-            block_type = "external_link"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("external_link", value)
 
         result = process_menu_item(
             item,
@@ -370,19 +356,14 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "",
         }
 
-        class MockBlockValue:
-            def __init__(self, block_type, val):
-                self.block_type = block_type
-                self.value = val
-
-        child_item = MockBlockValue("page_link", page_value)
+        child_item = self._create_mock_block("page_link", page_value)
 
         dropdown_value = {
             "title": "Resources",
             "items": [child_item],
         }
 
-        dropdown_item = MockBlockValue("dropdown", dropdown_value)
+        dropdown_item = self._create_mock_block("dropdown", dropdown_value)
 
         result = process_menu_item(
             dropdown_item,
@@ -404,19 +385,14 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "",
         }
 
-        class MockBlockValue:
-            def __init__(self, block_type, val):
-                self.block_type = block_type
-                self.value = val
-
-        child_item = MockBlockValue("page_link", page_value)
+        child_item = self._create_mock_block("page_link", page_value)
 
         dropdown_value = {
             "title": "Resources",
             "items": [child_item],
         }
 
-        dropdown_item = MockBlockValue("dropdown", dropdown_value)
+        dropdown_item = self._create_mock_block("dropdown", dropdown_value)
 
         result = process_menu_item(
             dropdown_item,
@@ -434,12 +410,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "items": [],
         }
 
-        class MockBlockValue:
-            def __init__(self, block_type, val):
-                self.block_type = block_type
-                self.value = val
-
-        dropdown_item = MockBlockValue("dropdown", dropdown_value)
+        dropdown_item = self._create_mock_block("dropdown", dropdown_value)
 
         result = process_menu_item(
             dropdown_item,
@@ -466,13 +437,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "",
         }
 
-        class MockBlockValue:
-            block_type = "page_link"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("page_link", value)
 
         result = process_menu_item(
             item,
@@ -490,13 +455,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
             "anchor": "",
         }
 
-        class MockBlockValue:
-            block_type = "page_link"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("page_link", value)
 
         result = process_menu_item(
             item,
@@ -510,13 +469,7 @@ class TemplateTagTests(WagtailTestUtils, TestCase):
         """Process menu item returns None for unknown type."""
         value = {}
 
-        class MockBlockValue:
-            block_type = "unknown_type"
-
-            def __init__(self, val):
-                self.value = val
-
-        item = MockBlockValue(value)
+        item = self._create_mock_block("unknown_type", value)
 
         result = process_menu_item(
             item,
