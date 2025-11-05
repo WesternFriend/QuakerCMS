@@ -239,10 +239,15 @@ class Command(BaseCommand):
         contact_page = next((p for p in pages if p.title == "Contact"), None)
 
         # Build navigation menu structure
+        # Note: PageLinkBlock is a StructBlock with 'page', 'custom_title', and 'anchor' fields
         nav_settings.menu_items = [
             {
                 "type": "page_link",
-                "value": about_page.id if about_page else None,
+                "value": {
+                    "page": about_page.id if about_page else None,
+                    "custom_title": "",
+                    "anchor": "",
+                },
                 "id": "about-link",
             },
             {
@@ -252,17 +257,29 @@ class Command(BaseCommand):
                     "items": [
                         {
                             "type": "page_link",
-                            "value": programs_page.id if programs_page else None,
+                            "value": {
+                                "page": programs_page.id if programs_page else None,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
                             "id": "programs-overview-link",
                         },
                         {
                             "type": "page_link",
-                            "value": adult_ed_page.id if adult_ed_page else None,
+                            "value": {
+                                "page": adult_ed_page.id if adult_ed_page else None,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
                             "id": "adult-ed-link",
                         },
                         {
                             "type": "page_link",
-                            "value": youth_page.id if youth_page else None,
+                            "value": {
+                                "page": youth_page.id if youth_page else None,
+                                "custom_title": "",
+                                "anchor": "",
+                            },
                             "id": "youth-link",
                         },
                     ],
@@ -274,12 +291,17 @@ class Command(BaseCommand):
                 "value": {
                     "url": "https://www.fgcquaker.org/",
                     "title": "FGC Website",
+                    "anchor": "",
                 },
                 "id": "fgc-link",
             },
             {
                 "type": "page_link",
-                "value": contact_page.id if contact_page else None,
+                "value": {
+                    "page": contact_page.id if contact_page else None,
+                    "custom_title": "",
+                    "anchor": "",
+                },
                 "id": "contact-link",
             },
         ]
