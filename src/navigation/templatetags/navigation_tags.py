@@ -56,6 +56,7 @@ def navigation_menu(context):
         if translation_keys:
             all_translations = Page.objects.filter(
                 translation_key__in=translation_keys,
+                locale__in=[current_locale, default_locale],
             ).select_related("locale")
 
             for trans_page in all_translations:
