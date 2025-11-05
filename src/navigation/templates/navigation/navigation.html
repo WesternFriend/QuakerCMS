@@ -1,254 +1,88 @@
 {% load static %}
 
 {% if menu_items %}
-  <div class="drawer lg:drawer-open">
-  {# Checkbox for mobile drawer state #}
-    <input id="nav-drawer" type="checkbox" class="drawer-toggle" />
+  <nav class="bg-black text-white shadow-md sticky top-0 z-50" aria-label="Main navigation">
+    <div class="container mx-auto px-2">
+      <div class="navbar w-full">
+        <div class="navbar-start">
+        {# Mobile dropdown menu #}
+          <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden" aria-label="Open menu">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </div>
+            <ul tabindex="0" class="menu menu-sm dropdown-content bg-white text-black rounded-box z-[1] mt-3 w-52 p-2 shadow">
+              {% for item in menu_items %}
+                {% if item.type == 'page_link' or item.type == 'external_link' %}
+                  <li>
+                    <a
+                      href="{{ item.url }}"
+                      class="text-black hover:bg-gray-200{% if item.is_current %} active{% endif %}"
+                    >
+                      {{ item.title }}
+                    </a>
+                  </li>
+                {% elif item.type == 'dropdown' %}
+                  <li>
+                    <a class="text-black">{{ item.title }}</a>
+                    <ul class="p-2 bg-white">
+                      {% for child in item.items %}
+                        <li>
+                          <a
+                            href="{{ child.url }}"
+                            class="text-black hover:bg-gray-200{% if child.is_current %} active{% endif %}"
+                          >
+                            {{ child.title }}
+                          </a>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
 
-    <div class="drawer-content flex flex-col">
-    {# Desktop Navigation #}
-    {# Note: Desktop and mobile menu rendering are intentionally separate (not using includes) because: #}
-    {# - Different ARIA patterns: role="menubar" (horizontal) vs role="menu" (vertical) #}
-    {# - Different interaction models: hover/click with <button> vs <details>/<summary> #}
-    {# - Different JavaScript requirements: edge detection vs native HTML5 behavior #}
-    {# - Different WCAG patterns for desktop vs mobile/touch navigation #}
-    {# While the data iteration looks similar, the rendering logic is fundamentally different. #}
-      <nav class="navbar bg-gray-50 shadow hidden lg:flex" aria-label="Main navigation">
-        <div class="flex-1">
-          <ul class="menu menu-horizontal" role="menubar">
+        {# Desktop horizontal menu #}
+          <ul class="menu menu-horizontal px-1 hidden lg:flex">
             {% for item in menu_items %}
               {% if item.type == 'page_link' or item.type == 'external_link' %}
-                <li role="none">
+                <li>
                   <a
                     href="{{ item.url }}"
-                    role="menuitem"
-                    class="focus:ring-2 focus:ring-primary"
-                    {% if item.is_current %}aria-current="page"{% endif %}
+                    {% if item.is_current %}class="active"{% endif %}
                   >
                     {{ item.title }}
                   </a>
                 </li>
               {% elif item.type == 'dropdown' %}
-                <li role="none" class="dropdown dropdown-hover">
-                  <button
-                    id="dropdown-trigger-{{ forloop.counter }}"
-                    role="menuitem"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    aria-controls="dropdown-{{ forloop.counter }}"
-                    class="btn btn-ghost focus:ring-2 focus:ring-primary"
-                    tabindex="0"
-                  >
-                    {{ item.title }}
-                    <svg class="fill-current w-4 h-4 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
-                    </svg>
-                  </button>
-                  <ul
-                    id="dropdown-{{ forloop.counter }}"
-                    role="menu"
-                    aria-labelledby="dropdown-trigger-{{ forloop.counter }}"
-                    class="dropdown-content menu bg-base-100 rounded-box z-50 w-52 p-2 shadow"
-                  >
-                    {% for child in item.items %}
-                      <li role="none">
-                        <a
-                          href="{{ child.url }}"
-                          role="menuitem"
-                          class="focus:ring-2 focus:ring-primary"
-                          {% if child.is_current %}aria-current="page"{% endif %}
-                        >
-                          {{ child.title }}
-                        </a>
-                      </li>
-                    {% endfor %}
-                  </ul>
+                <li>
+                  <details>
+                    <summary>{{ item.title }}</summary>
+                    <ul class="p-2 bg-white text-black rounded-box shadow z-[1]">
+                      {% for child in item.items %}
+                        <li>
+                          <a
+                            href="{{ child.url }}"
+                            class="text-black hover:bg-gray-200{% if child.is_current %} active{% endif %}"
+                          >
+                            {{ child.title }}
+                          </a>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </details>
                 </li>
               {% endif %}
             {% endfor %}
           </ul>
         </div>
-      </nav>
 
-    {# Mobile Hamburger Button #}
-      <div class="navbar bg-gray-50 shadow lg:hidden">
-        <label
-          for="nav-drawer"
-          class="btn btn-square btn-ghost"
-          aria-label="Open menu"
-          aria-expanded="false"
-          aria-controls="mobile-menu"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </label>
-      </div>
-
-    {# Main content slot - will be filled by base template #}
-      <div class="flex-1">
-      {# Content rendered here by extending templates #}
-      </div>
-    </div>
-
-  {# Mobile Drawer #}
-    <div class="drawer-side lg:hidden">
-      <label for="nav-drawer" class="drawer-overlay" aria-label="Close menu"></label>
-
-      <aside id="mobile-menu" class="min-h-full w-80 bg-base-200">
-      {# Close button #}
-        <div class="flex justify-end p-4">
-          <label for="nav-drawer" class="btn btn-sm btn-circle btn-ghost" aria-label="Close menu">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </label>
+      {# Right side - placeholder for future buttons/search #}
+        <div class="navbar-end">
         </div>
-
-      {# Mobile menu items #}
-      {# Note: Mobile rendering intentionally duplicates desktop iteration logic but with different: #}
-      {# - HTML structure: <details>/<summary> for progressive enhancement (no JS required) #}
-      {# - ARIA semantics: vertical menu pattern with touch-friendly targets (min-h-[44px]) #}
-      {# - Interaction model: accordion expansion vs hover/click dropdowns #}
-      {# See desktop section comment above for why this is not extracted to an include. #}
-        <ul class="menu p-4 w-full" role="menu">
-          {% for item in menu_items %}
-            {% if item.type == 'page_link' or item.type == 'external_link' %}
-              <li role="none">
-                <a
-                  href="{{ item.url }}"
-                  role="menuitem"
-                  class="focus:ring-2 focus:ring-primary min-h-[44px] flex items-center"
-                  {% if item.is_current %}aria-current="page"{% endif %}
-                >
-                  {{ item.title }}
-                </a>
-              </li>
-            {% elif item.type == 'dropdown' %}
-              <li role="none">
-                <details {% if item.is_open %}open{% endif %}>
-                  <summary role="menuitem" aria-haspopup="true" class="min-h-[44px] flex items-center">
-                    {{ item.title }}
-                    <svg class="fill-current w-4 h-4 ml-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
-                    </svg>
-                  </summary>
-                  <ul role="menu" class="ml-4">
-                    {% for child in item.items %}
-                      <li role="none">
-                        <a
-                          href="{{ child.url }}"
-                          role="menuitem"
-                          class="focus:ring-2 focus:ring-primary min-h-[44px] flex items-center"
-                          {% if child.is_current %}aria-current="page"{% endif %}
-                        >
-                          {{ child.title }}
-                        </a>
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </details>
-              </li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      </aside>
+      </div>
     </div>
-  </div>
-
-{# JavaScript for dropdown edge detection and keyboard navigation #}
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-  // Dropdown edge detection
-      const dropdowns = document.querySelectorAll('.dropdown');
-
-      dropdowns.forEach(dropdown => {
-        const button = dropdown.querySelector('button[role="menuitem"]');
-        const menu = dropdown.querySelector('ul[role="menu"]');
-
-        if (!button || !menu) return;
-
-    // Show dropdown on hover or focus
-        const showDropdown = () => {
-          // Temporarily make menu visible for measurement (but not visually shown yet)
-          // This allows getBoundingClientRect() to return actual dimensions
-          const wasHidden = menu.style.visibility === 'hidden';
-          menu.style.visibility = 'hidden';
-          menu.style.display = 'block';
-
-          const buttonRect = button.getBoundingClientRect();
-          const menuRect = menu.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-
-          // Check if dropdown would overflow right edge
-          if (buttonRect.left + menuRect.width > viewportWidth) {
-            menu.style.right = '0';
-            menu.style.left = 'auto';
-          } else {
-            menu.style.left = '0';
-            menu.style.right = 'auto';
-          }
-
-          // Restore visibility now that positioning is set
-          menu.style.visibility = '';
-          menu.style.display = '';
-
-          // Finally set aria-expanded to match visual state
-          button.setAttribute('aria-expanded', 'true');
-        };
-
-        const hideDropdown = () => {
-          button.setAttribute('aria-expanded', 'false');
-        };
-
-    // Hover events
-        dropdown.addEventListener('mouseenter', showDropdown);
-        dropdown.addEventListener('mouseleave', hideDropdown);
-
-    // Keyboard support
-        button.addEventListener('click', (e) => {
-          e.preventDefault();
-          const isExpanded = button.getAttribute('aria-expanded') === 'true';
-          if (isExpanded) {
-            hideDropdown();
-          } else {
-            showDropdown();
-          }
-        });
-
-        button.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            showDropdown();
-        // Focus first menu item
-            const firstItem = menu.querySelector('a[role="menuitem"]');
-            if (firstItem) firstItem.focus();
-          } else if (e.key === 'Escape') {
-            hideDropdown();
-            button.focus();
-          }
-        });
-
-    // Allow Escape to close dropdown from within menu
-        menu.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') {
-            hideDropdown();
-            button.focus();
-          }
-        });
-      });
-
-  // Update drawer button aria-expanded state
-      const drawerToggle = document.getElementById('nav-drawer');
-      const drawerButtons = document.querySelectorAll('label[for="nav-drawer"]');
-
-      if (drawerToggle && drawerButtons.length > 0) {
-        drawerToggle.addEventListener('change', () => {
-          drawerButtons.forEach(button => {
-            button.setAttribute('aria-expanded', drawerToggle.checked);
-          });
-        });
-      }
-    });
-  </script>
+  </nav>
 {% endif %}
