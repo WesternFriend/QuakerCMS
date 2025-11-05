@@ -1318,3 +1318,88 @@ class ManagementCommandTests(WagtailTestUtils, TestCase):
             call_command("scaffold_navbar_content", stdout=StringIO())
 
         self.assertIn("No default site found", str(context.exception))
+
+    def test_scaffold_navbar_content_skips_existing_menu(self):
+        """Scaffold command skips menu update when menu already exists (without --force-menu)."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # First run - creates menu
+        call_command("scaffold_navbar_content", stdout=StringIO())
+
+        # Get nav settings
+        nav_settings = NavigationMenuSetting.for_site(self.site)
+
+        # Modify the menu to simulate manual changes
+        nav_settings.menu_items = [
+            {
+                "type": "external_link",
+                "value": {
+                    "url": "https://example.com",
+                    "title": "Custom Link",
+                    "anchor": "",
+                },
+                "id": "custom-link",
+            },
+        ]
+        nav_settings.save()
+
+        # Second run - should skip menu update
+        out = StringIO()
+        call_command("scaffold_navbar_content", stdout=out)
+
+        # Verify menu was NOT overwritten
+        nav_settings.refresh_from_db()
+        self.assertEqual(len(nav_settings.menu_items), 1)
+        self.assertEqual(nav_settings.menu_items[0].block_type, "external_link")
+        self.assertEqual(nav_settings.menu_items[0].value["title"], "Custom Link")
+
+        # Check warning message
+        output = out.getvalue()
+        self.assertIn("Navigation menu already exists", output)
+        self.assertIn("Use --force-menu to overwrite", output)
+
+    def test_scaffold_navbar_content_force_menu_overwrites(self):
+        """Scaffold command with --force-menu overwrites existing menu."""
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        # First run - creates menu
+        call_command("scaffold_navbar_content", stdout=StringIO())
+
+        # Get initial menu
+        nav_settings = NavigationMenuSetting.for_site(self.site)
+
+        # Modify the menu to simulate manual changes
+        nav_settings.menu_items = [
+            {
+                "type": "external_link",
+                "value": {
+                    "url": "https://example.com",
+                    "title": "Custom Link",
+                    "anchor": "",
+                },
+                "id": "custom-link",
+            },
+        ]
+        nav_settings.save()
+
+        # Second run with --force-menu - should overwrite
+        out = StringIO()
+        call_command("scaffold_navbar_content", "--force-menu", stdout=out)
+
+        # Verify menu WAS overwritten
+        nav_settings.refresh_from_db()
+        self.assertGreater(len(nav_settings.menu_items), 1)
+
+        # Check for scaffold menu items
+        menu_types = [item.block_type for item in nav_settings.menu_items]
+        self.assertIn("page_link", menu_types)
+        self.assertIn("dropdown", menu_types)
+
+        # Check success message (no warning)
+        output = out.getvalue()
+        self.assertIn("Updated NavigationMenuSetting", output)
+        self.assertNotIn("already exists", output)

@@ -29,6 +29,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Skip creating navigation menu (only create pages)",
         )
+        parser.add_argument(
+            "--force-menu",
+            action="store_true",
+            help="Force overwrite existing navigation menu (default: skip if menu exists)",
+        )
 
     def handle(self, *args, **options):
         """Execute the command."""
@@ -61,7 +66,11 @@ class Command(BaseCommand):
 
             # Create navigation menu if not skipped
             if not options["skip_menu"]:
-                self._create_navigation_menu(pages, default_locale)
+                self._create_navigation_menu(
+                    pages,
+                    default_locale,
+                    options["force_menu"],
+                )
 
             self.stdout.write(
                 self.style.SUCCESS("\n✅ Successfully scaffolded navigation content!"),
@@ -276,8 +285,14 @@ class Command(BaseCommand):
             )
         return pages
 
-    def _create_navigation_menu(self, pages, locale):
-        """Create navigation menu configuration."""
+    def _create_navigation_menu(self, pages, locale, force_menu=False):
+        """Create navigation menu configuration.
+
+        Args:
+            pages: List of pages to include in the menu
+            locale: The locale for the menu
+            force_menu: If True, overwrite existing menu. If False, skip if menu exists.
+        """
         self.stdout.write("Configuring navigation menu...")
 
         # Get the default site
@@ -290,6 +305,17 @@ class Command(BaseCommand):
 
         # Get or create NavigationMenuSetting for the site
         nav_settings = NavigationMenuSetting.for_site(site)
+
+        # Check if menu already exists and force flag is not set
+        if nav_settings.menu_items and not force_menu:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"Navigation menu already exists for site '{site.site_name}'. "
+                    "Skipping menu configuration to preserve manual changes. "
+                    "Use --force-menu to overwrite.",
+                ),
+            )
+            return
 
         # Find pages by title
         about_page = next((p for p in pages if p.title == "About"), None)
