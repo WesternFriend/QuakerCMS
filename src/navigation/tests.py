@@ -1,11 +1,13 @@
 """Tests for navigation menu system."""
 
+from django.core.exceptions import ValidationError
 from django.test import RequestFactory, TestCase
 from wagtail.models import Locale, Site
 from wagtail.test.utils import WagtailTestUtils
 
 from content.models import ContentPage
 from home.models import HomePage
+from navigation.blocks import DropdownMenuBlock
 from navigation.models import NavigationMenuSetting
 from navigation.templatetags.navigation_tags import process_menu_item
 
@@ -177,10 +179,6 @@ class StreamFieldTests(TestCase):
 
     def test_dropdown_block_validates_non_empty_items(self):
         """Dropdown menu block requires at least one item."""
-        from django.core.exceptions import ValidationError
-
-        from navigation.blocks import DropdownMenuBlock
-
         block = DropdownMenuBlock()
 
         # Empty items should raise validation error
