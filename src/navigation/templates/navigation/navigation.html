@@ -7,37 +7,63 @@
         <div class="navbar-start">
         {# Mobile dropdown menu #}
           <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden" aria-label="Open menu">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button
+              tabindex="0"
+              class="btn btn-ghost lg:hidden"
+              aria-label="Open menu"
+              aria-expanded="false"
+              aria-controls="mobile-menu"
+              aria-haspopup="true"
+              id="mobile-menu-button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
               </svg>
-            </div>
-            <ul tabindex="0" class="menu menu-sm dropdown-content bg-white text-black rounded-box z-[1] mt-3 w-52 p-2 shadow">
+            </button>
+            <ul
+              id="mobile-menu"
+              tabindex="0"
+              class="menu menu-sm dropdown-content bg-white text-black rounded-box z-[1] mt-3 w-52 p-2 shadow hidden"
+              role="menu"
+              aria-labelledby="mobile-menu-button"
+            >
               {% for item in menu_items %}
                 {% if item.type == 'page_link' or item.type == 'external_link' %}
-                  <li>
+                  <li role="none">
                     <a
                       href="{{ item.url }}"
-                      class="text-black hover:bg-gray-200{% if item.is_current %} active{% endif %}"
+                      role="menuitem"
+                      class="text-black hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500{% if item.is_current %} active{% endif %}"
+                      {% if item.is_current %}aria-current="page"{% endif %}
                     >
                       {{ item.title }}
                     </a>
                   </li>
                 {% elif item.type == 'dropdown' %}
-                  <li>
-                    <a class="text-black">{{ item.title }}</a>
-                    <ul class="p-2 bg-white">
-                      {% for child in item.items %}
-                        <li>
-                          <a
-                            href="{{ child.url }}"
-                            class="text-black hover:bg-gray-200{% if child.is_current %} active{% endif %}"
-                          >
-                            {{ child.title }}
-                          </a>
-                        </li>
-                      {% endfor %}
-                    </ul>
+                  <li role="none">
+                    <details>
+                      <summary
+                        role="menuitem"
+                        aria-haspopup="true"
+                        class="text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {{ item.title }}
+                      </summary>
+                      <ul class="p-2 bg-white" role="menu">
+                        {% for child in item.items %}
+                          <li role="none">
+                            <a
+                              href="{{ child.url }}"
+                              role="menuitem"
+                              class="text-black hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500{% if child.is_current %} active{% endif %}"
+                              {% if child.is_current %}aria-current="page"{% endif %}
+                            >
+                              {{ child.title }}
+                            </a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </details>
                   </li>
                 {% endif %}
               {% endfor %}
@@ -45,27 +71,37 @@
           </div>
 
         {# Desktop horizontal menu #}
-          <ul class="menu menu-horizontal px-1 hidden lg:flex">
+          <ul class="menu menu-horizontal px-1 hidden lg:flex" role="menubar">
             {% for item in menu_items %}
               {% if item.type == 'page_link' or item.type == 'external_link' %}
-                <li>
+                <li role="none">
                   <a
                     href="{{ item.url }}"
-                    {% if item.is_current %}class="active"{% endif %}
+                    role="menuitem"
+                    class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black{% if item.is_current %} active{% endif %}"
+                    {% if item.is_current %}aria-current="page"{% endif %}
                   >
                     {{ item.title }}
                   </a>
                 </li>
               {% elif item.type == 'dropdown' %}
-                <li>
+                <li role="none">
                   <details>
-                    <summary>{{ item.title }}</summary>
-                    <ul class="p-2 bg-white text-black rounded-box shadow z-[1]">
+                    <summary
+                      role="menuitem"
+                      aria-haspopup="true"
+                      class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+                    >
+                      {{ item.title }}
+                    </summary>
+                    <ul class="p-2 bg-white text-black rounded-box shadow z-[1]" role="menu">
                       {% for child in item.items %}
-                        <li>
+                        <li role="none">
                           <a
                             href="{{ child.url }}"
-                            class="text-black hover:bg-gray-200{% if child.is_current %} active{% endif %}"
+                            role="menuitem"
+                            class="text-black hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500{% if child.is_current %} active{% endif %}"
+                            {% if child.is_current %}aria-current="page"{% endif %}
                           >
                             {{ child.title }}
                           </a>
@@ -85,4 +121,46 @@
       </div>
     </div>
   </nav>
+
+  {# JavaScript for mobile menu accessibility #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileMenu = document.getElementById('mobile-menu');
+
+      if (mobileMenuButton && mobileMenu) {
+        // Toggle mobile menu
+        mobileMenuButton.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          this.setAttribute('aria-expanded', !isExpanded);
+          mobileMenu.classList.toggle('hidden');
+
+          if (!isExpanded) {
+            // Focus first menu item when opening
+            const firstItem = mobileMenu.querySelector('a, summary');
+            if (firstItem) firstItem.focus();
+          }
+        });
+
+        // Close menu on Escape key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+            mobileMenuButton.setAttribute('aria-expanded', 'false');
+            mobileMenuButton.focus();
+          }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+              mobileMenuButton.setAttribute('aria-expanded', 'false');
+            }
+          }
+        });
+      }
+    });
+  </script>
 {% endif %}
