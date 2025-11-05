@@ -1302,7 +1302,8 @@ class ManagementCommandTests(WagtailTestUtils, TestCase):
         )
 
         output = out.getvalue()
-        self.assertIn("Created 5 pages", output)
+        # On second run, all pages should be reused (not created)
+        self.assertIn("Created 0 pages, reused 5 pages", output)
 
     def test_scaffold_navbar_content_no_site_error(self):
         """Scaffold command fails gracefully with no site."""

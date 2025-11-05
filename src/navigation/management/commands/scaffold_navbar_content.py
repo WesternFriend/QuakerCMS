@@ -126,7 +126,12 @@ class Command(BaseCommand):
         self.stdout.write("Creating sample pages...")
 
         def get_or_create_page(parent, *, title, slug, body):
-            """Get existing page or create a new one (idempotent)."""
+            """Get existing page or create a new one (idempotent).
+
+            Returns:
+                tuple: (page, created) where created is True if a new page was created,
+                       False if an existing page was reused.
+            """
             existing = (
                 parent.get_children()
                 .type(ContentPage)
@@ -134,7 +139,7 @@ class Command(BaseCommand):
                 .first()
             )
             if existing:
-                return existing.specific
+                return existing.specific, False
 
             page = ContentPage(
                 title=title,
@@ -144,12 +149,14 @@ class Command(BaseCommand):
             )
             parent.add_child(instance=page)
             page.save_revision().publish()
-            return page
+            return page, True
 
         pages = []
+        created_count = 0
+        reused_count = 0
 
         # Top-level pages
-        about_page = get_or_create_page(
+        about_page, created = get_or_create_page(
             home_page,
             title="About",
             slug="dev_about",
@@ -165,8 +172,12 @@ class Command(BaseCommand):
             ],
         )
         pages.append(about_page)
+        if created:
+            created_count += 1
+        else:
+            reused_count += 1
 
-        programs_page = get_or_create_page(
+        programs_page, created = get_or_create_page(
             home_page,
             title="Programs",
             slug="dev_programs",
@@ -182,9 +193,13 @@ class Command(BaseCommand):
             ],
         )
         pages.append(programs_page)
+        if created:
+            created_count += 1
+        else:
+            reused_count += 1
 
         # Sub-pages under Programs (for dropdown testing)
-        adult_education = get_or_create_page(
+        adult_education, created = get_or_create_page(
             programs_page,
             title="Adult Education",
             slug="dev_adult-education",
@@ -200,8 +215,12 @@ class Command(BaseCommand):
             ],
         )
         pages.append(adult_education)
+        if created:
+            created_count += 1
+        else:
+            reused_count += 1
 
-        youth_programs = get_or_create_page(
+        youth_programs, created = get_or_create_page(
             programs_page,
             title="Youth Programs",
             slug="dev_youth-programs",
@@ -217,9 +236,13 @@ class Command(BaseCommand):
             ],
         )
         pages.append(youth_programs)
+        if created:
+            created_count += 1
+        else:
+            reused_count += 1
 
         # Additional top-level page
-        contact_page = get_or_create_page(
+        contact_page, created = get_or_create_page(
             home_page,
             title="Contact",
             slug="dev_contact",
@@ -235,8 +258,22 @@ class Command(BaseCommand):
             ],
         )
         pages.append(contact_page)
+        if created:
+            created_count += 1
+        else:
+            reused_count += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Created {len(pages)} pages"))
+        # Report creation/reuse statistics
+        if reused_count > 0:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Created {created_count} pages, reused {reused_count} pages",
+                ),
+            )
+        else:
+            self.stdout.write(
+                self.style.SUCCESS(f"Created {created_count} pages"),
+            )
         return pages
 
     def _create_navigation_menu(self, pages, locale):
